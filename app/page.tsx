@@ -353,7 +353,11 @@ function Generator({ onBack, onGenerate, userEmail, isPremium, onOpenLogin, onLo
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [ind, setInd] = useState("");
+  const [indOther, setIndOther] = useState("");
+  const [showIndOther, setShowIndOther] = useState(false);
   const [vals, setVals] = useState<string[]>([]);
+  const [valOther, setValOther] = useState("");
+  const [showValOther, setShowValOther] = useState(false);
   const [aud, setAud] = useState("");
   const [style, setStyle] = useState("");
 
@@ -420,11 +424,17 @@ function Generator({ onBack, onGenerate, userEmail, isPremium, onOpenLogin, onLo
           <p style={{ color: "#888", fontSize: "15px", marginBottom: "20px" }}>This shapes your palette, voice and content style.</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
             {INDUSTRIES.map(i => (
-              <button key={i} onClick={() => setInd(i)} style={{ padding: "12px 14px", textAlign: "left", background: ind === i ? `${GOLD}12` : "rgba(255,255,255,.025)", border: `1px solid ${ind === i ? GOLD + "40" : "rgba(255,255,255,.06)"}`, borderRadius: "9px", color: ind === i ? GOLD : "#bbb", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                {ind === i && "✓ "}{i}
+              <button key={i} onClick={() => { setInd(i); setShowIndOther(false); setIndOther(""); }} style={{ padding: "12px 14px", textAlign: "left", background: ind === i && !showIndOther ? `${GOLD}12` : "rgba(255,255,255,.025)", border: `1px solid ${ind === i && !showIndOther ? GOLD + "40" : "rgba(255,255,255,.06)"}`, borderRadius: "9px", color: ind === i && !showIndOther ? GOLD : "#bbb", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                {ind === i && !showIndOther && "✓ "}{i}
               </button>
             ))}
+            <button onClick={() => { if (showIndOther) { setShowIndOther(false); setIndOther(""); setInd(""); } else { setShowIndOther(true); setInd(""); } }} style={{ padding: "12px 14px", textAlign: "left", background: showIndOther ? `${GOLD}12` : "rgba(255,255,255,.025)", border: `1px solid ${showIndOther ? GOLD + "40" : "rgba(255,255,255,.06)"}`, borderRadius: "9px", color: showIndOther ? GOLD : "#bbb", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+              {showIndOther ? "✓ " : "+ "}Other
+            </button>
           </div>
+          {showIndOther && (
+            <input autoFocus value={indOther} onChange={e => { setIndOther(e.target.value); setInd(e.target.value); }} placeholder="Type your industry…" style={{ marginTop: "12px", padding: "12px 14px", fontSize: "14px", width: "100%", boxSizing: "border-box" }} />
+          )}
         </>}
 
         {step === 3 && <>
@@ -436,7 +446,23 @@ function Generator({ onBack, onGenerate, userEmail, isPremium, onOpenLogin, onLo
                 {s && "✓ "}{v}
               </button>
             );})}
+            {vals.filter(v => !VALUES.includes(v)).map(v => (
+              <button key={v} onClick={() => toggle(v)} style={{ padding: "9px 16px", background: `${GOLD}15`, border: `1px solid ${GOLD}50`, borderRadius: "100px", color: GOLD, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                ✓ {v}
+              </button>
+            ))}
+            {vals.length < 3 && (
+              <button onClick={() => setShowValOther(s => !s)} style={{ padding: "9px 16px", background: showValOther ? `${GOLD}15` : "rgba(255,255,255,.03)", border: `1px solid ${showValOther ? GOLD + "50" : "rgba(255,255,255,.07)"}`, borderRadius: "100px", color: showValOther ? GOLD : "#bbb", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                {showValOther ? "✓ " : "+ "}Other
+              </button>
+            )}
           </div>
+          {showValOther && vals.length < 3 && (
+            <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+              <input autoFocus value={valOther} onChange={e => setValOther(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && valOther.trim() && !vals.includes(valOther.trim())) { toggle(valOther.trim()); setValOther(""); setShowValOther(false); } }} placeholder="Type a value and press Enter…" style={{ flex: 1, padding: "9px 16px", fontSize: "13px", borderRadius: "100px" }} />
+              <button onClick={() => { if (valOther.trim() && !vals.includes(valOther.trim())) { toggle(valOther.trim()); setValOther(""); setShowValOther(false); } }} style={{ padding: "9px 18px", background: `${GOLD}20`, border: `1px solid ${GOLD}50`, borderRadius: "100px", color: GOLD, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>Add</button>
+            </div>
+          )}
           {vals.length > 0 && <p style={{ color: "#555", fontSize: "12px", marginTop: "14px" }}>Selected: {vals.join(", ")}</p>}
         </>}
 
