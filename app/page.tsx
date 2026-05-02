@@ -338,9 +338,12 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         </div>
       </section>
 
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "20px 24px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-        <MiniLogo L="B" color={GOLD} style="minimal" size={16} />
-        <span style={{ color: "#333", fontSize: "11px", letterSpacing: ".1em" }}>BRANDMIND © 2025</span>
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "20px 24px", display: "flex", alignItems: "center", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <MiniLogo L="B" color={GOLD} style="minimal" size={16} />
+          <span style={{ color: "#333", fontSize: "11px", letterSpacing: ".1em" }}>BRANDMIND © 2025</span>
+        </div>
+        <a href="mailto:juanalvarados2012@gmail.com" style={{ color: "#444", fontSize: "11px", textDecoration: "none" }}>juanalvarados2012@gmail.com</a>
       </footer>
     </div>
   );
@@ -962,7 +965,7 @@ function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean>
     setError("");
     const ok = await onLogin(e);
     setVerifying(false);
-    if (!ok) setError("No purchase found for this email. Contact support if you've already paid.");
+    if (!ok) setError("No purchase found for this email. Email juanalvarados2012@gmail.com if you've already paid.");
   };
 
   return (
