@@ -30,23 +30,35 @@ export default function Home() {
   const [form, setForm] = useState<any>(null);
   const [kit, setKit] = useState<any>(null);
   const [isPremium, setIsPremium] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const verifyPremium = useCallback(async (email: string): Promise<boolean> => {
+  const login = useCallback(async (email: string): Promise<boolean> => {
+    const clean = email.toLowerCase().trim();
+    setUserEmail(clean);
+    localStorage.setItem("brandmind_email", clean);
     try {
       const res = await fetch("/api/check-premium", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.toLowerCase().trim() }),
+        body: JSON.stringify({ email: clean }),
       });
       const data = await res.json();
       if (data.premium) {
         setIsPremium(true);
-        localStorage.setItem("brandmind_premium_email", email.toLowerCase().trim());
+        localStorage.setItem("brandmind_premium_email", clean);
       }
       return !!data.premium;
     } catch {
       return false;
     }
+  }, []);
+
+  const logout = useCallback(() => {
+    setUserEmail(null);
+    setIsPremium(false);
+    localStorage.removeItem("brandmind_email");
+    localStorage.removeItem("brandmind_premium_email");
   }, []);
 
   useEffect(() => {
@@ -55,12 +67,12 @@ export default function Home() {
     const success = params.get("success");
     if (success === "true" && email) {
       window.history.replaceState({}, "", "/");
-      verifyPremium(email);
+      login(email);
     } else {
-      const saved = localStorage.getItem("brandmind_premium_email");
-      if (saved) verifyPremium(saved);
+      const saved = localStorage.getItem("brandmind_email") || localStorage.getItem("brandmind_premium_email");
+      if (saved) login(saved);
     }
-  }, [verifyPremium]);
+  }, [login]);
 
   const generate = async (data: any) => {
     setForm(data);
@@ -101,10 +113,11 @@ RULES: Real hex codes only. Real Google Font names only.`;
         ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:#1e1e1e;}
       `}</style>
 
-      {view === "landing" && <Landing onStart={() => setView("generator")} />}
-      {view === "generator" && <Generator onBack={() => setView("landing")} onGenerate={generate} />}
+      {view === "landing" && <Landing onStart={() => setView("generator")} userEmail={userEmail} isPremium={isPremium} onOpenLogin={() => setShowLoginModal(true)} onLogout={logout} />}
+      {view === "generator" && <Generator onBack={() => setView("landing")} onGenerate={generate} userEmail={userEmail} isPremium={isPremium} onOpenLogin={() => setShowLoginModal(true)} onLogout={logout} />}
       {view === "loading" && <LoadingScreen />}
-      {view === "results" && kit && <Results kit={kit} form={form} onRestart={() => { setKit(null); setForm(null); setView("landing"); }} callAI={callAI} isPremium={isPremium} onVerifyPremium={verifyPremium} />}
+      {view === "results" && kit && <Results kit={kit} form={form} onRestart={() => { setKit(null); setForm(null); setView("landing"); }} callAI={callAI} isPremium={isPremium} onLogin={login} userEmail={userEmail} onLogout={logout} onOpenLogin={() => setShowLoginModal(true)} />}
+      {showLoginModal && <LoginModal onLogin={login} onClose={() => setShowLoginModal(false)} />}
     </div>
   );
 }
@@ -168,7 +181,98 @@ function MiniLogo({ L, color, style, size }: any) {
   );
 }
 
-function Landing({ onStart }: any) {
+function LoginModal({ onLogin, onClose }: { onLogin: (email: string) => Promise<boolean>; onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<null | { isPremium: boolean }>(null);
+
+  const handleSubmit = async () => {
+    const e = email.trim();
+    if (!e) return;
+    setLoading(true);
+    const isPrem = await onLogin(e);
+    setResult({ isPremium: isPrem });
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={onClose}>
+      <div className="card" style={{ background: "#0e1012", padding: "36px", maxWidth: "380px", width: "100%", borderRadius: "16px", animation: "fadeUp .25s ease" }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}>
+          <MiniLogo L="B" color={GOLD} style="minimal" size={22} />
+          <span style={{ fontFamily: "'Playfair Display',serif", color: "#EDE5D4", fontSize: "16px", fontWeight: "700" }}>BrandMind</span>
+        </div>
+        {!result ? (
+          <>
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "24px", color: "#EDE5D4", marginBottom: "6px" }}>Sign in</h2>
+            <p style={{ color: "#666", fontSize: "13px", marginBottom: "20px" }}>Enter your email to access your account.</p>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSubmit()} placeholder="your@email.com" autoFocus style={{ padding: "13px 16px", fontSize: "14px", marginBottom: "12px" }} />
+            <button onClick={handleSubmit} disabled={loading || !email.trim()} className="g" style={{ width: "100%", padding: "14px", fontSize: "14px", opacity: loading || !email.trim() ? 0.6 : 1 }}>
+              {loading ? "Checking…" : "Continue →"}
+            </button>
+            <button onClick={onClose} style={{ width: "100%", marginTop: "8px", padding: "10px", background: "none", border: "none", color: "#555", fontSize: "13px", cursor: "pointer" }}>Cancel</button>
+          </>
+        ) : (
+          <>
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <div style={{ fontSize: "36px", marginBottom: "12px" }}>{result.isPremium ? "✦" : "👋"}</div>
+              <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "22px", color: "#EDE5D4", marginBottom: "8px" }}>
+                {result.isPremium ? "Welcome back, Pro!" : "Welcome!"}
+              </h2>
+              {result.isPremium
+                ? <p style={{ color: GOLD, fontSize: "13px" }}>Your Pro access is active. All features unlocked.</p>
+                : <p style={{ color: "#888", fontSize: "13px", lineHeight: "1.7" }}>You're on the free plan. Generate your brand and upgrade anytime.</p>
+              }
+            </div>
+            <button onClick={onClose} className="g" style={{ width: "100%", padding: "14px", fontSize: "14px" }}>
+              {result.isPremium ? "✦ Go to My Brand" : "Get Started →"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function UserMenu({ userEmail, isPremium, onOpenLogin, onLogout }: any) {
+  const [open, setOpen] = useState(false);
+  if (!userEmail) {
+    return <button onClick={onOpenLogin} className="o" style={{ padding: "8px 18px", fontSize: "12px" }}>Sign in</button>;
+  }
+  const initial = userEmail[0].toUpperCase();
+  const name = userEmail.split("@")[0];
+  return (
+    <div style={{ position: "relative" }}>
+      <button onClick={() => setOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: "7px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", borderRadius: "8px", padding: "6px 12px", cursor: "pointer", color: "#ccc", fontSize: "12px", fontFamily: "'DM Sans',sans-serif" }}>
+        <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: isPremium ? GOLD : "#222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: isPremium ? "#0a0806" : "#888", fontWeight: "700", flexShrink: 0 }}>{initial}</span>
+        {isPremium && <span style={{ color: GOLD, fontSize: "10px", fontWeight: "700" }}>PRO</span>}
+        <span style={{ maxWidth: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+        <span style={{ color: "#555", fontSize: "9px" }}>▼</span>
+      </button>
+      {open && (
+        <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 98 }} onClick={() => setOpen(false)} />
+          <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", background: "#0e1012", border: "1px solid rgba(255,255,255,.1)", borderRadius: "10px", padding: "8px", minWidth: "210px", zIndex: 99 }}>
+            <div style={{ padding: "8px 10px 12px", borderBottom: "1px solid rgba(255,255,255,.06)", marginBottom: "6px" }}>
+              <p style={{ color: "#444", fontSize: "10px", marginBottom: "3px" }}>Signed in as</p>
+              <p style={{ color: "#bbb", fontSize: "12px", wordBreak: "break-all", marginBottom: "8px" }}>{userEmail}</p>
+              {isPremium
+                ? <span style={{ display: "inline-block", background: `${GOLD}18`, border: `1px solid ${GOLD}40`, borderRadius: "100px", color: GOLD, fontSize: "10px", fontWeight: "700", padding: "2px 9px" }}>✦ Pro Plan</span>
+                : <span style={{ display: "inline-block", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", borderRadius: "100px", color: "#555", fontSize: "10px", padding: "2px 9px" }}>Free Plan</span>
+              }
+            </div>
+            <button onClick={() => { setOpen(false); onLogout(); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", color: "#888", fontSize: "13px", padding: "8px 10px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", borderRadius: "6px" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,.04)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "none")}
+            >Sign out</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) {
   const [count] = useState(() => Math.floor(Math.random() * 60) + 90);
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
@@ -177,7 +281,10 @@ function Landing({ onStart }: any) {
           <MiniLogo L="B" color={GOLD} style="minimal" size={22} />
           <span style={{ fontFamily: "'Playfair Display',serif", color: "#EDE5D4", fontSize: "15px", fontWeight: "700" }}>BrandMind</span>
         </div>
-        <button onClick={goBuy} className="g" style={{ padding: "8px 18px", fontSize: "12px" }}>Get Pro — $49</button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {!isPremium && <button onClick={goBuy} className="g" style={{ padding: "8px 18px", fontSize: "12px" }}>Get Pro — $49</button>}
+          <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
+        </div>
       </nav>
 
       <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "100px 20px 60px", textAlign: "center" }}>
@@ -239,7 +346,7 @@ function Landing({ onStart }: any) {
   );
 }
 
-function Generator({ onBack, onGenerate }: any) {
+function Generator({ onBack, onGenerate, userEmail, isPremium, onOpenLogin, onLogout }: any) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [ind, setInd] = useState("");
@@ -271,7 +378,10 @@ function Generator({ onBack, onGenerate }: any) {
             <MiniLogo L="B" color={GOLD} style="minimal" size={18} />
             <span style={{ fontFamily: "'Playfair Display',serif", color: "#aaa", fontSize: "13px" }}>BrandMind</span>
           </div>
-          <span style={{ color: "#555", fontSize: "12px" }}>{step}/5</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ color: "#555", fontSize: "12px" }}>{step}/5</span>
+            <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
+          </div>
         </div>
         <div style={{ height: "2px", background: "rgba(255,255,255,.05)" }}>
           <div style={{ height: "100%", background: `linear-gradient(90deg,${GOLD},${GOLDB})`, width: `${pct + 25}%`, transition: "width .4s ease" }} />
@@ -387,7 +497,7 @@ function LoadingScreen() {
   );
 }
 
-function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: any) {
+function Results({ kit, form, onRestart, callAI, isPremium, onLogin, userEmail, onLogout, onOpenLogin }: any) {
   const [copied, setCopied] = useState<string | null>(null);
   const [tagI, setTagI] = useState(0);
   const [activeTab, setActiveTab] = useState("brand");
@@ -395,6 +505,22 @@ function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: a
   const [genStatus, setGenStatus] = useState("idle");
   const [kitData, setKitData] = useState(kit);
   const [regenLoading, setRegenLoading] = useState<any>({});
+  const [editMode, setEditMode] = useState(false);
+
+  const updatePost = (i: number, field: string, v: string) =>
+    setAllContent((p: any) => ({ ...p, posts: (p.posts || []).map((post: any, idx: number) => idx === i ? { ...post, [field]: v } : post) }));
+  const updateCopy = (path: string, v: string) =>
+    setAllContent((prev: any) => {
+      const parts = path.split(".");
+      const copy = { ...prev.copy };
+      if (parts.length === 1) copy[parts[0]] = v;
+      else copy[parts[0]] = { ...(copy[parts[0]] || {}), [parts[1]]: v };
+      return { ...prev, copy };
+    });
+  const updateReel = (i: number, field: string, v: string) =>
+    setAllContent((p: any) => ({ ...p, reels: (p.reels || []).map((reel: any, idx: number) => idx === i ? { ...reel, [field]: v } : reel) }));
+  const updateBio = (platform: string, field: string, v: string) =>
+    setAllContent((p: any) => ({ ...p, bio: { ...p.bio, [platform]: { ...(p.bio?.[platform] || {}), [field]: v } } }));
 
   const copy = (text: string, key: string) => {
     try { navigator.clipboard.writeText(text); } catch (_) {}
@@ -464,11 +590,13 @@ function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: a
           </div>
         </div>
         <div style={{ display: "flex", gap: "7px", alignItems: "center" }}>
+          {isPremium && (
+            <button onClick={() => setEditMode(p => !p)} className={editMode ? "g" : "o"} style={{ padding: "7px 12px", fontSize: "12px" }}>
+              {editMode ? "✓ Done" : "✏ Edit"}
+            </button>
+          )}
           <button onClick={onRestart} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↺ New</button>
-          {isPremium
-            ? <span style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}40`, borderRadius: "6px", color: GOLD, fontSize: "11px", fontWeight: "700", padding: "7px 12px" }}>✓ PRO</span>
-            : <button onClick={goBuy} className="g" style={{ padding: "7px 16px", fontSize: "12px" }}>Get Pro — $49</button>
-          }
+          <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
       </div>
 
@@ -489,7 +617,10 @@ function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: a
               <div style={{ flex: 1, minWidth: "180px" }}>
                 <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "5px" }}>BRAND IDENTITY</p>
                 <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,5vw,44px)", color: "#EDE5D4", fontWeight: "900", marginBottom: "6px" }}>{form.name}</h1>
-                <p style={{ color: GOLD, fontSize: "15px", fontStyle: "italic", fontFamily: "'Playfair Display',serif", marginBottom: "12px" }}>{kitData.taglines?.[tagI]}</p>
+                {editMode
+                  ? <input value={kitData.taglines?.[tagI] || ""} onChange={e => setKitData((p: any) => { const t = [...(p.taglines || [])]; t[tagI] = e.target.value; return { ...p, taglines: t }; })} style={{ color: GOLD, fontSize: "14px", fontFamily: "'Playfair Display',serif", marginBottom: "12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(196,151,90,.3)", borderRadius: "6px", padding: "6px 10px", outline: "none", width: "100%" }} />
+                  : <p style={{ color: GOLD, fontSize: "15px", fontStyle: "italic", fontFamily: "'Playfair Display',serif", marginBottom: "12px" }}>{kitData.taglines?.[tagI]}</p>
+                }
                 <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", alignItems: "center", marginBottom: "8px" }}>
                   <span style={{ color: "#444", fontSize: "10px" }}>TAGLINE</span>
                   {kitData.taglines?.map((_: any, x: number) => (
@@ -545,20 +676,26 @@ function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: a
                   <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>BRAND VOICE</p>
                   <RegenBtn section="voice" label="Regenerate" />
                 </div>
-                <p style={{ color: "#999", fontSize: "13px", lineHeight: "1.8", fontStyle: "italic" }}>{kitData.brandVoice}</p>
+                {editMode
+                  ? <textarea value={kitData.brandVoice || ""} onChange={e => setKitData((p: any) => ({ ...p, brandVoice: e.target.value }))} rows={4} style={{ color: "#999", fontSize: "13px", lineHeight: "1.8", background: "rgba(255,255,255,.06)", border: "1px solid rgba(196,151,90,.3)", borderRadius: "6px", padding: "8px", outline: "none", width: "100%", resize: "vertical" }} />
+                  : <p style={{ color: "#999", fontSize: "13px", lineHeight: "1.8", fontStyle: "italic" }}>{kitData.brandVoice}</p>
+                }
               </div>
               <div className="card" style={{ padding: "18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                   <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>BRAND STORY</p>
                   <button onClick={() => copy(kitData.brandStory, "bs")} style={{ padding: "3px 9px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: "5px", color: copied === "bs" ? "#4CAF50" : "#555", fontSize: "10px", cursor: "pointer" }}>{copied === "bs" ? "✓" : "Copy"}</button>
                 </div>
-                <p style={{ color: "#999", fontSize: "13px", lineHeight: "1.8" }}>{kitData.brandStory}</p>
+                {editMode
+                  ? <textarea value={kitData.brandStory || ""} onChange={e => setKitData((p: any) => ({ ...p, brandStory: e.target.value }))} rows={4} style={{ color: "#999", fontSize: "13px", lineHeight: "1.8", background: "rgba(255,255,255,.06)", border: "1px solid rgba(196,151,90,.3)", borderRadius: "6px", padding: "8px", outline: "none", width: "100%", resize: "vertical" }} />
+                  : <p style={{ color: "#999", fontSize: "13px", lineHeight: "1.8" }}>{kitData.brandStory}</p>
+                }
               </div>
             </div>
 
             <div className="card-g" style={{ padding: "24px", textAlign: "center" }}>
               {genStatus === "idle" && !isPremium && (
-                <PaywallCard onVerifyPremium={onVerifyPremium} />
+                <PaywallCard onLogin={onLogin} />
               )}
               {genStatus === "idle" && isPremium && <>
                 <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "8px" }}>CONTENT ENGINE</p>
@@ -598,10 +735,10 @@ function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: a
               </div>
             ) : (
               <>
-                {activeTab === "posts" && <PostsView content={allContent.posts} copy={copy} copied={copied} />}
-                {activeTab === "copy" && <CopyView content={allContent.copy} copy={copy} copied={copied} />}
-                {activeTab === "reels" && <ReelsView content={allContent.reels} copy={copy} copied={copied} />}
-                {activeTab === "bio" && <BioView content={allContent.bio} copy={copy} copied={copied} />}
+                {activeTab === "posts" && <PostsView content={allContent.posts} copy={copy} copied={copied} editMode={editMode} onUpdatePost={updatePost} />}
+                {activeTab === "copy" && <CopyView content={allContent.copy} copy={copy} copied={copied} editMode={editMode} onUpdateCopy={updateCopy} />}
+                {activeTab === "reels" && <ReelsView content={allContent.reels} copy={copy} copied={copied} editMode={editMode} onUpdateReel={updateReel} />}
+                {activeTab === "bio" && <BioView content={allContent.bio} copy={copy} copied={copied} editMode={editMode} onUpdateBio={updateBio} />}
               </>
             )}
           </div>
@@ -611,12 +748,13 @@ function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: a
   );
 }
 
-function PostsView({ content, copy, copied }: any) {
+function PostsView({ content, copy, copied, editMode, onUpdatePost }: any) {
   const [page, setPage] = useState(0);
   const PER = 4;
   const total = content?.length || 0;
   const pages = Math.ceil(total / PER);
   const current = (content || []).slice(page * PER, page * PER + PER);
+  const E = { background: "rgba(255,255,255,.06)", border: "1px solid rgba(196,151,90,.3)", borderRadius: "6px", padding: "6px 8px", outline: "none", width: "100%", fontFamily: "'DM Sans',sans-serif", color: "#fff" };
   if (!total) return <div style={{ color: "#666", padding: "20px", textAlign: "center" }}>No posts generated.</div>;
   return (
     <div>
@@ -627,19 +765,31 @@ function PostsView({ content, copy, copied }: any) {
         </button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
-        {current.map((p: any, i: number) => (
+        {current.map((p: any, i: number) => {
+          const absIdx = page * PER + i;
+          return (
           <div key={i} className="card" style={{ padding: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "9px" }}>
-              <span style={{ background: `${GOLD}14`, color: GOLD, border: `1px solid ${GOLD}20`, borderRadius: "100px", padding: "2px 8px", fontSize: "10px", fontWeight: "600" }}>Post {page * PER + i + 1}</span>
+              <span style={{ background: `${GOLD}14`, color: GOLD, border: `1px solid ${GOLD}20`, borderRadius: "100px", padding: "2px 8px", fontSize: "10px", fontWeight: "600" }}>Post {absIdx + 1}</span>
               <button onClick={() => copy(`${p.caption}\n\n${p.hashtags}`, `p${i}`)} style={{ padding: "3px 9px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "5px", color: copied === `p${i}` ? "#4CAF50" : "#777", fontSize: "10px", cursor: "pointer" }}>
                 {copied === `p${i}` ? "✓" : "Copy"}
               </button>
             </div>
-            <p style={{ color: GOLD, fontSize: "13px", fontWeight: "600", marginBottom: "7px", lineHeight: "1.5", fontStyle: "italic" }}>"{p.hook}"</p>
-            <p style={{ color: "#ccc", fontSize: "12px", lineHeight: "1.7", marginBottom: "7px" }}>{p.caption}</p>
-            <p style={{ color: "#555", fontSize: "10px", fontFamily: "monospace", lineHeight: "1.6" }}>{p.hashtags}</p>
+            {editMode
+              ? <input value={p.hook} onChange={e => onUpdatePost(absIdx, "hook", e.target.value)} style={{ ...E, fontSize: "12px", fontWeight: "600", marginBottom: "7px" }} />
+              : <p style={{ color: GOLD, fontSize: "13px", fontWeight: "600", marginBottom: "7px", lineHeight: "1.5", fontStyle: "italic" }}>"{p.hook}"</p>
+            }
+            {editMode
+              ? <textarea value={p.caption} onChange={e => onUpdatePost(absIdx, "caption", e.target.value)} rows={3} style={{ ...E, fontSize: "12px", lineHeight: "1.7", marginBottom: "7px", resize: "vertical" }} />
+              : <p style={{ color: "#ccc", fontSize: "12px", lineHeight: "1.7", marginBottom: "7px" }}>{p.caption}</p>
+            }
+            {editMode
+              ? <input value={p.hashtags} onChange={e => onUpdatePost(absIdx, "hashtags", e.target.value)} style={{ ...E, fontSize: "10px", fontFamily: "monospace" }} />
+              : <p style={{ color: "#555", fontSize: "10px", fontFamily: "monospace", lineHeight: "1.6" }}>{p.hashtags}</p>
+            }
           </div>
-        ))}
+          );
+        })}
       </div>
       {pages > 1 && (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center", alignItems: "center" }}>
@@ -654,13 +804,14 @@ function PostsView({ content, copy, copied }: any) {
   );
 }
 
-function CopyView({ content, copy, copied }: any) {
+function CopyView({ content, copy, copied, editMode, onUpdateCopy }: any) {
   if (!content?.hero) return <div style={{ color: "#666", padding: "20px", textAlign: "center" }}>No website copy generated.</div>;
+  const E = { background: "rgba(255,255,255,.06)", border: "1px solid rgba(196,151,90,.3)", borderRadius: "6px", padding: "6px 8px", outline: "none", width: "100%", fontFamily: "'DM Sans',sans-serif", color: "#bbb", fontSize: "13px" };
   const sections = [
-    { label: "Hero Section", data: [{ k: "Headline", v: content.hero?.headline }, { k: "Subheadline", v: content.hero?.subheadline }, { k: "CTA", v: content.hero?.cta }], key: "hero" },
-    { label: "About Section", data: [{ k: "Headline", v: content.about?.headline }, { k: "Body", v: content.about?.body }], key: "about" },
-    { label: "Services", data: (content.services?.items || []).map((s: any) => ({ k: s.name, v: s.desc })), key: "services" },
-    { label: "Social Proof", data: [{ k: "Quote", v: content.social_proof }], key: "proof" },
+    { label: "Hero Section", key: "hero", data: [{ k: "Headline", path: "hero.headline", v: content.hero?.headline }, { k: "Subheadline", path: "hero.subheadline", v: content.hero?.subheadline }, { k: "CTA", path: "hero.cta", v: content.hero?.cta }] },
+    { label: "About Section", key: "about", data: [{ k: "Headline", path: "about.headline", v: content.about?.headline }, { k: "Body", path: "about.body", v: content.about?.body }] },
+    { label: "Services", key: "services", data: (content.services?.items || []).map((s: any) => ({ k: s.name, v: s.desc, path: null })) },
+    { label: "Social Proof", key: "proof", data: [{ k: "Quote", path: "social_proof", v: content.social_proof }] },
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -678,7 +829,12 @@ function CopyView({ content, copy, copied }: any) {
           {section.data.map((d: any, di: number) => (
             <div key={di} style={{ marginBottom: "9px", paddingBottom: "9px", borderBottom: di < section.data.length - 1 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
               <p style={{ color: "#444", fontSize: "9px", fontWeight: "700", letterSpacing: ".1em", textTransform: "uppercase", marginBottom: "3px" }}>{d.k}</p>
-              <p style={{ color: "#bbb", fontSize: "13px", lineHeight: "1.7" }}>{d.v}</p>
+              {editMode && d.path
+                ? (d.k === "Body" || d.k === "Quote"
+                  ? <textarea value={d.v || ""} onChange={e => onUpdateCopy(d.path, e.target.value)} rows={3} style={{ ...E, lineHeight: "1.7", resize: "vertical" }} />
+                  : <input value={d.v || ""} onChange={e => onUpdateCopy(d.path, e.target.value)} style={E} />)
+                : <p style={{ color: "#bbb", fontSize: "13px", lineHeight: "1.7" }}>{d.v}</p>
+              }
             </div>
           ))}
         </div>
@@ -687,8 +843,9 @@ function CopyView({ content, copy, copied }: any) {
   );
 }
 
-function ReelsView({ content, copy, copied }: any) {
+function ReelsView({ content, copy, copied, editMode, onUpdateReel }: any) {
   if (!content?.length) return <div style={{ color: "#666", padding: "20px", textAlign: "center" }}>No reel scripts generated.</div>;
+  const E = { background: "rgba(255,255,255,.06)", border: "1px solid rgba(196,151,90,.3)", borderRadius: "6px", padding: "6px 8px", outline: "none", width: "100%", fontFamily: "'DM Sans',sans-serif", color: "#fff", fontSize: "13px", lineHeight: "1.7", resize: "vertical" as const };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -709,13 +866,16 @@ function ReelsView({ content, copy, copied }: any) {
           </div>
           <div style={{ padding: "18px" }}>
             <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "17px", color: "#EDE5D4", marginBottom: "14px" }}>{s.title}</h3>
-            {[{ t: "🎬 HOOK", sub: "0–3 sec", text: s.hook, col: GOLD, bg: `${GOLD}08` }, { t: "📹 BODY", sub: "Main", text: s.body, col: "#bbb", bg: "rgba(255,255,255,.02)" }, { t: "✦ CTA", sub: "End", text: s.cta, col: GOLD, bg: `${GOLD}05` }].map((b, bi) => (
+            {[{ t: "🎬 HOOK", sub: "0–3 sec", text: s.hook, field: "hook", col: GOLD, bg: `${GOLD}08` }, { t: "📹 BODY", sub: "Main", text: s.body, field: "body", col: "#bbb", bg: "rgba(255,255,255,.02)" }, { t: "✦ CTA", sub: "End", text: s.cta, field: "cta", col: GOLD, bg: `${GOLD}05` }].map((b, bi) => (
               <div key={bi} style={{ background: b.bg, border: "1px solid rgba(255,255,255,.06)", borderRadius: "9px", padding: "12px", marginBottom: "10px" }}>
                 <div style={{ display: "flex", gap: "8px", marginBottom: "6px" }}>
                   <span style={{ color: b.col, fontSize: "10px", fontWeight: "700" }}>{b.t}</span>
                   <span style={{ color: "#333", fontSize: "10px" }}>{b.sub}</span>
                 </div>
-                <p style={{ color: b.col, fontSize: "13px", lineHeight: "1.7" }}>{b.text}</p>
+                {editMode
+                  ? <textarea value={b.text || ""} onChange={e => onUpdateReel(i, b.field, e.target.value)} rows={2} style={{ ...E, color: b.col }} />
+                  : <p style={{ color: b.col, fontSize: "13px", lineHeight: "1.7" }}>{b.text}</p>
+                }
               </div>
             ))}
           </div>
@@ -725,8 +885,15 @@ function ReelsView({ content, copy, copied }: any) {
   );
 }
 
-function BioView({ content, copy, copied }: any) {
+function BioView({ content, copy, copied, editMode, onUpdateBio }: any) {
   if (!content?.instagram) return <div style={{ color: "#666", padding: "20px", textAlign: "center" }}>No bios generated.</div>;
+  const E = { background: "rgba(255,255,255,.06)", border: "1px solid rgba(196,151,90,.3)", borderRadius: "6px", padding: "6px 8px", outline: "none", width: "100%", fontFamily: "'DM Sans',sans-serif", color: "#bbb", fontSize: "12px", lineHeight: "1.7", resize: "vertical" as const };
+  const platforms = [
+    { platform: "Instagram", pKey: "instagram", icon: "📸", data: [{ k: "Bio", field: "bio", v: content.instagram?.bio }, { k: "Link CTA", field: "link_cta", v: content.instagram?.link_cta }], key: "ig" },
+    { platform: "TikTok", pKey: "tiktok", icon: "🎵", data: [{ k: "Bio", field: "bio", v: content.tiktok?.bio }], key: "tt" },
+    { platform: "LinkedIn", pKey: "linkedin", icon: "💼", data: [{ k: "Headline", field: "headline", v: content.linkedin?.headline }, { k: "Summary", field: "summary", v: content.linkedin?.summary }], key: "li" },
+    { platform: "Twitter/X", pKey: "twitter", icon: "🌐", data: [{ k: "Bio", field: "bio", v: content.twitter?.bio }], key: "tw" },
+  ];
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
@@ -735,12 +902,7 @@ function BioView({ content, copy, copied }: any) {
         </button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-        {[
-          { platform: "Instagram", icon: "📸", data: [{ k: "Bio", v: content.instagram?.bio }, { k: "Link CTA", v: content.instagram?.link_cta }], key: "ig" },
-          { platform: "TikTok", icon: "🎵", data: [{ k: "Bio", v: content.tiktok?.bio }], key: "tt" },
-          { platform: "LinkedIn", icon: "💼", data: [{ k: "Headline", v: content.linkedin?.headline }, { k: "Summary", v: content.linkedin?.summary }], key: "li" },
-          { platform: "Twitter/X", icon: "🌐", data: [{ k: "Bio", v: content.twitter?.bio }], key: "tw" },
-        ].map((p, pi) => (
+        {platforms.map((p, pi) => (
           <div key={pi} className="card" style={{ padding: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
@@ -754,7 +916,10 @@ function BioView({ content, copy, copied }: any) {
             {p.data.map((d: any, di: number) => (
               <div key={di} style={{ marginBottom: "7px" }}>
                 <p style={{ color: "#444", fontSize: "9px", fontWeight: "700", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: "3px" }}>{d.k}</p>
-                <p style={{ color: "#bbb", fontSize: "12px", lineHeight: "1.7", whiteSpace: "pre-line" }}>{d.v}</p>
+                {editMode
+                  ? <textarea value={d.v || ""} onChange={e => onUpdateBio(p.pKey, d.field, e.target.value)} rows={2} style={E} />
+                  : <p style={{ color: "#bbb", fontSize: "12px", lineHeight: "1.7", whiteSpace: "pre-line" }}>{d.v}</p>
+                }
               </div>
             ))}
           </div>
@@ -764,7 +929,7 @@ function BioView({ content, copy, copied }: any) {
   );
 }
 
-function PaywallCard({ onVerifyPremium }: { onVerifyPremium: (email: string) => Promise<boolean> }) {
+function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean> }) {
   const [email, setEmail] = useState("");
   const [buying, setBuying] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -795,7 +960,7 @@ function PaywallCard({ onVerifyPremium }: { onVerifyPremium: (email: string) => 
     if (!e) { setError("Enter your email first"); return; }
     setVerifying(true);
     setError("");
-    const ok = await onVerifyPremium(e);
+    const ok = await onLogin(e);
     setVerifying(false);
     if (!ok) setError("No purchase found for this email. Contact support if you've already paid.");
   };
