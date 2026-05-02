@@ -350,22 +350,33 @@ function Generator({ onBack, onGenerate, userEmail, isPremium, onOpenLogin, onLo
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [ind, setInd] = useState("");
+  const [customInd, setCustomInd] = useState("");
   const [vals, setVals] = useState<string[]>([]);
+  const [customValInput, setCustomValInput] = useState("");
+  const [showCustomVal, setShowCustomVal] = useState(false);
   const [aud, setAud] = useState("");
   const [style, setStyle] = useState("");
 
   const valid = useCallback(() => {
     if (step === 1) return name.trim().length > 1;
-    if (step === 2) return ind !== "";
+    if (step === 2) return ind !== "" && (ind !== "Other" || customInd.trim().length > 1);
     if (step === 3) return vals.length >= 1;
     if (step === 4) return aud.trim().length > 3;
     if (step === 5) return style !== "";
     return false;
-  }, [step, name, ind, vals, aud, style]);
+  }, [step, name, ind, customInd, vals, aud, style]);
 
-  const next = () => { if (!valid()) return; if (step < 5) setStep(s => s + 1); else onGenerate({ name, industry: ind, values: vals, audience: aud, style }); };
+  const next = () => {
+    if (!valid()) return;
+    if (step < 5) setStep(s => s + 1);
+    else onGenerate({ name, industry: ind === "Other" ? customInd.trim() : ind, values: vals, audience: aud, style });
+  };
   const back = () => step > 1 ? setStep(s => s - 1) : onBack();
   const toggle = (v: string) => setVals(p => p.includes(v) ? p.filter(x => x !== v) : p.length < 3 ? [...p, v] : p);
+  const addCustomVal = () => {
+    const v = customValInput.trim();
+    if (v && !vals.includes(v) && vals.length < 3) { setVals(p => [...p, v]); setCustomValInput(""); setShowCustomVal(false); }
+  };
   const ok = valid();
   const pct = ((step - 1) / 4) * 100;
 
@@ -421,7 +432,15 @@ function Generator({ onBack, onGenerate, userEmail, isPremium, onOpenLogin, onLo
                 {ind === i && "✓ "}{i}
               </button>
             ))}
+            <button onClick={() => setInd("Other")} style={{ padding: "12px 14px", textAlign: "left", background: ind === "Other" ? `${GOLD}12` : "rgba(255,255,255,.025)", border: `1px solid ${ind === "Other" ? GOLD + "40" : "rgba(255,255,255,.06)"}`, borderRadius: "9px", color: ind === "Other" ? GOLD : "#bbb", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+              {ind === "Other" && "✓ "}Other
+            </button>
           </div>
+          {ind === "Other" && (
+            <div style={{ marginTop: "12px" }}>
+              <input value={customInd} onChange={e => setCustomInd(e.target.value)} placeholder="Describe your industry…" autoFocus style={{ padding: "12px 14px", fontSize: "14px" }} />
+            </div>
+          )}
         </>}
 
         {step === 3 && <>
@@ -433,7 +452,19 @@ function Generator({ onBack, onGenerate, userEmail, isPremium, onOpenLogin, onLo
                 {s && "✓ "}{v}
               </button>
             );})}
+            {vals.length < 3 && !showCustomVal && (
+              <button onClick={() => setShowCustomVal(true)} style={{ padding: "9px 16px", background: "rgba(255,255,255,.03)", border: `1px dashed rgba(255,255,255,.15)`, borderRadius: "100px", color: "#666", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                + Other
+              </button>
+            )}
           </div>
+          {showCustomVal && (
+            <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
+              <input value={customValInput} onChange={e => setCustomValInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addCustomVal()} placeholder="Type a custom value…" autoFocus style={{ flex: 1, padding: "10px 14px", fontSize: "14px" }} />
+              <button onClick={addCustomVal} style={{ padding: "10px 16px", background: `${GOLD}20`, border: `1px solid ${GOLD}40`, borderRadius: "8px", color: GOLD, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>Add</button>
+              <button onClick={() => { setShowCustomVal(false); setCustomValInput(""); }} style={{ padding: "10px 12px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", borderRadius: "8px", color: "#555", fontSize: "13px", cursor: "pointer" }}>✕</button>
+            </div>
+          )}
           {vals.length > 0 && <p style={{ color: "#555", fontSize: "12px", marginTop: "14px" }}>Selected: {vals.join(", ")}</p>}
         </>}
 
