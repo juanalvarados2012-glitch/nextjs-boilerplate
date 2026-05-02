@@ -29,6 +29,38 @@ export default function Home() {
   const [view, setView] = useState("landing");
   const [form, setForm] = useState<any>(null);
   const [kit, setKit] = useState<any>(null);
+  const [isPremium, setIsPremium] = useState(false);
+
+  const verifyPremium = useCallback(async (email: string): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/check-premium", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.toLowerCase().trim() }),
+      });
+      const data = await res.json();
+      if (data.premium) {
+        setIsPremium(true);
+        localStorage.setItem("brandmind_premium_email", email.toLowerCase().trim());
+      }
+      return !!data.premium;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+    const success = params.get("success");
+    if (success === "true" && email) {
+      window.history.replaceState({}, "", "/");
+      verifyPremium(email);
+    } else {
+      const saved = localStorage.getItem("brandmind_premium_email");
+      if (saved) verifyPremium(saved);
+    }
+  }, [verifyPremium]);
 
   const generate = async (data: any) => {
     setForm(data);
@@ -72,7 +104,7 @@ RULES: Real hex codes only. Real Google Font names only.`;
       {view === "landing" && <Landing onStart={() => setView("generator")} />}
       {view === "generator" && <Generator onBack={() => setView("landing")} onGenerate={generate} />}
       {view === "loading" && <LoadingScreen />}
-      {view === "results" && kit && <Results kit={kit} form={form} onRestart={() => { setKit(null); setForm(null); setView("landing"); }} callAI={callAI} />}
+      {view === "results" && kit && <Results kit={kit} form={form} onRestart={() => { setKit(null); setForm(null); setView("landing"); }} callAI={callAI} isPremium={isPremium} onVerifyPremium={verifyPremium} />}
     </div>
   );
 }
@@ -355,7 +387,7 @@ function LoadingScreen() {
   );
 }
 
-function Results({ kit, form, onRestart, callAI }: any) {
+function Results({ kit, form, onRestart, callAI, isPremium, onVerifyPremium }: any) {
   const [copied, setCopied] = useState<string | null>(null);
   const [tagI, setTagI] = useState(0);
   const [activeTab, setActiveTab] = useState("brand");
@@ -431,9 +463,12 @@ function Results({ kit, form, onRestart, callAI }: any) {
             <div style={{ color: "#444", fontSize: "10px", textTransform: "uppercase", letterSpacing: ".07em" }}>{form.industry}</div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: "7px" }}>
+        <div style={{ display: "flex", gap: "7px", alignItems: "center" }}>
           <button onClick={onRestart} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↺ New</button>
-          <button onClick={goBuy} className="g" style={{ padding: "7px 16px", fontSize: "12px" }}>Get Pro — $49</button>
+          {isPremium
+            ? <span style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}40`, borderRadius: "6px", color: GOLD, fontSize: "11px", fontWeight: "700", padding: "7px 12px" }}>✓ PRO</span>
+            : <button onClick={goBuy} className="g" style={{ padding: "7px 16px", fontSize: "12px" }}>Get Pro — $49</button>
+          }
         </div>
       </div>
 
@@ -522,7 +557,10 @@ function Results({ kit, form, onRestart, callAI }: any) {
             </div>
 
             <div className="card-g" style={{ padding: "24px", textAlign: "center" }}>
-              {genStatus === "idle" && <>
+              {genStatus === "idle" && !isPremium && (
+                <PaywallCard onVerifyPremium={onVerifyPremium} />
+              )}
+              {genStatus === "idle" && isPremium && <>
                 <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "8px" }}>CONTENT ENGINE</p>
                 <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px", color: "#EDE5D4", marginBottom: "7px" }}>Generate all your content</h3>
                 <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px" }}>30 posts, website copy, Reel scripts, and bios — in your brand voice.</p>
@@ -723,6 +761,78 @@ function BioView({ content, copy, copied }: any) {
         ))}
       </div>
     </div>
+  );
+}
+
+function PaywallCard({ onVerifyPremium }: { onVerifyPremium: (email: string) => Promise<boolean> }) {
+  const [email, setEmail] = useState("");
+  const [buying, setBuying] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleBuy = async () => {
+    const e = email.trim();
+    if (!e) { setError("Enter your email first"); return; }
+    setBuying(true);
+    setError("");
+    try {
+      const res = await fetch("/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: e }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+      else setError("Checkout error. Try again.");
+    } catch {
+      setError("Checkout error. Try again.");
+    }
+    setBuying(false);
+  };
+
+  const handleVerify = async () => {
+    const e = email.trim();
+    if (!e) { setError("Enter your email first"); return; }
+    setVerifying(true);
+    setError("");
+    const ok = await onVerifyPremium(e);
+    setVerifying(false);
+    if (!ok) setError("No purchase found for this email. Contact support if you've already paid.");
+  };
+
+  return (
+    <>
+      <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "8px" }}>PRO FEATURE</p>
+      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px", color: "#EDE5D4", marginBottom: "7px" }}>Unlock your full content kit</h3>
+      <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px", lineHeight: "1.7" }}>30 posts, website copy, Reel scripts & bios — generated in your brand voice.</p>
+      <input
+        type="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && handleBuy()}
+        placeholder="your@email.com"
+        style={{ padding: "12px 16px", fontSize: "14px", marginBottom: "10px", textAlign: "center", width: "100%", maxWidth: "320px" }}
+      />
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "center" }}>
+        <button
+          onClick={handleBuy}
+          disabled={buying}
+          className="g"
+          style={{ padding: "14px 36px", fontSize: "15px", width: "100%", maxWidth: "320px", opacity: buying ? 0.7 : 1 }}
+        >
+          {buying ? "Loading…" : "✦ Get Pro — $49"}
+        </button>
+        <button
+          onClick={handleVerify}
+          disabled={verifying}
+          style={{ background: "none", border: "1px solid rgba(255,255,255,.1)", borderRadius: "8px", color: "#666", fontSize: "13px", padding: "10px 20px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", width: "100%", maxWidth: "320px" }}
+        >
+          {verifying ? "Verifying…" : "Already purchased? Activate →"}
+        </button>
+      </div>
+      {error && <p style={{ color: "#ff6b6b", fontSize: "12px", marginTop: "10px" }}>{error}</p>}
+      <p style={{ color: "#333", fontSize: "11px", marginTop: "14px" }}>🔒 One-time $49 · 7-day money-back guarantee</p>
+    </>
   );
 }
 
