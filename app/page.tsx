@@ -368,6 +368,113 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         </div>
       </section>
 
+      <section style={{ padding: "0 20px 100px", maxWidth: "960px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>SEE WHAT YOU GET</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,44px)", color: "#EDE5D4", marginBottom: "12px" }}>Everything your brand needs</h2>
+          <p style={{ color: "#666", fontSize: "14px" }}>Real output. Brand: <span style={{ color: GOLD }}>Lumé Studio</span> · Industry: Creative Agency</p>
+        </div>
+
+        <div className="card" style={{ padding: "24px", marginBottom: "14px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700", marginBottom: "16px" }}>LOGO — 5 Styles Generated</p>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+            {(["modern","classic","luxury","playful","minimal"] as const).map(s => (
+              <div key={s} style={{ background: "rgba(0,0,0,.35)", borderRadius: "12px", padding: "18px 14px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", flex: "1", minWidth: "80px" }}>
+                <MiniLogo L="L" color={GOLD} style={s} size={58} />
+                <span style={{ color: "#444", fontSize: "9px", letterSpacing: ".1em", textTransform: "uppercase" }}>{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "14px", marginBottom: "14px" }}>
+          <div className="card" style={{ padding: "20px" }}>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700", marginBottom: "14px" }}>COLOR PALETTE</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {[{name:"Obsidian",hex:"#1A1A2E",role:"Primary"},{name:"Gold",hex:"#C4975A",role:"Accent"},{name:"Ivory",hex:"#EDE5D4",role:"Light"},{name:"Slate",hex:"#4A5568",role:"Secondary"},{name:"Sand",hex:"#D4C5A9",role:"Neutral"}].map((c,i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: i === 0 ? "44px" : "32px", height: i === 0 ? "44px" : "32px", borderRadius: "8px", background: c.hex, border: "1px solid rgba(255,255,255,.07)", flexShrink: 0 }} />
+                  <div>
+                    <div style={{ color: "#ccc", fontSize: "11px", fontWeight: "600" }}>{c.name}</div>
+                    <div style={{ color: "#555", fontSize: "10px" }}>{c.hex} · {c.role}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: "20px" }}>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700", marginBottom: "14px" }}>TAGLINES — 3 Options</p>
+            {["Where vision becomes reality","Crafted for the bold","Your story, elevated"].map((t,i) => (
+              <div key={i} style={{ padding: "11px 13px", background: i === 0 ? `${GOLD}12` : "rgba(255,255,255,.02)", border: `1px solid ${i === 0 ? GOLD+"30" : "rgba(255,255,255,.05)"}`, borderRadius: "8px", marginBottom: "8px" }}>
+                <p style={{ color: i === 0 ? GOLD : "#555", fontSize: "13px", fontStyle: "italic", fontFamily: "'Playfair Display',serif" }}>{i === 0 && "✓ "}{t}</p>
+              </div>
+            ))}
+            <div style={{ marginTop: "14px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,.05)" }}>
+              <p style={{ color: "#444", fontSize: "10px", letterSpacing: ".12em", marginBottom: "5px" }}>BRAND VOICE</p>
+              <p style={{ color: "#666", fontSize: "12px", lineHeight: "1.7", fontStyle: "italic" }}>"Bold yet approachable. We speak to creatives who are serious about growth but hate corporate speak."</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: "20px", marginBottom: "14px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>INSTAGRAM POSTS — 6 Ready to Post</p>
+            <span style={{ color: "#333", fontSize: "11px" }}>+ 24 more</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "10px" }}>
+            {[
+              {hook:"The gap between who you are and how you show up online.",caption:"Your brand isn't just a logo. It's the first impression you never get to take back. At Lumé Studio, we believe every creative deserves to show up like the pro they already are.",hashtags:"#branding #creative #design #brandidentity #studio"},
+              {hook:"Stop blending in. Start showing up like you mean it.",caption:"Most creatives undersell themselves — not because their work isn't great, but because their brand doesn't reflect it. You deserve a brand that matches your talent. Drop a 🎨 if this hits.",hashtags:"#creativestudio #personalbranding #designlife #brandstrategy"},
+            ].map((p,i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderRadius: "10px", padding: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                  <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: `${GOLD}20`, border: `1px solid ${GOLD}40`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <MiniLogo L="L" color={GOLD} style="minimal" size={14} />
+                  </div>
+                  <span style={{ color: "#888", fontSize: "11px", fontWeight: "600" }}>lumestudio</span>
+                </div>
+                <p style={{ color: GOLD, fontSize: "12px", fontWeight: "600", fontStyle: "italic", marginBottom: "8px", lineHeight: "1.5" }}>"{p.hook}"</p>
+                <p style={{ color: "#777", fontSize: "11px", lineHeight: "1.7", marginBottom: "8px" }}>{p.caption}</p>
+                <p style={{ color: "#383838", fontSize: "10px", fontFamily: "monospace" }}>{p.hashtags}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "14px" }}>
+          <div className="card" style={{ padding: "20px" }}>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700", marginBottom: "16px" }}>WEBSITE COPY</p>
+            <div style={{ borderLeft: `2px solid ${GOLD}25`, paddingLeft: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div>
+                <p style={{ color: "#333", fontSize: "9px", letterSpacing: ".12em", marginBottom: "4px" }}>HERO HEADLINE</p>
+                <p style={{ color: "#EDE5D4", fontSize: "17px", fontFamily: "'Playfair Display',serif", lineHeight: "1.35" }}>We turn creative visions into iconic brands</p>
+              </div>
+              <div>
+                <p style={{ color: "#333", fontSize: "9px", letterSpacing: ".12em", marginBottom: "4px" }}>SUBHEADLINE</p>
+                <p style={{ color: "#666", fontSize: "12px", lineHeight: "1.7" }}>Lumé Studio crafts brand identities that don't just look good — they convert.</p>
+              </div>
+              <div>
+                <p style={{ color: "#333", fontSize: "9px", letterSpacing: ".12em", marginBottom: "4px" }}>CALL TO ACTION</p>
+                <span style={{ color: GOLD, fontSize: "13px", fontWeight: "700" }}>Start Your Brand Story →</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: "20px" }}>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700", marginBottom: "16px" }}>REEL SCRIPT — 30 sec</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[{label:"HOOK",color:"#C4975A",text:"You have 3 seconds to stop the scroll. Here's what actually works."},{label:"BODY",color:"#888",text:"Show your process. Show your personality. Show the transformation — not just the result. People buy stories, not services."},{label:"CTA",color:"#4CAF50",text:"Follow for weekly brand tips that convert. Link in bio to build yours today."}].map((s,i) => (
+                <div key={i}>
+                  <span style={{ color: s.color, fontSize: "8px", letterSpacing: ".14em", fontWeight: "700" }}>{s.label}</span>
+                  <p style={{ color: "#777", fontSize: "12px", lineHeight: "1.6", marginTop: "3px" }}>{s.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section style={{ padding: "0 20px 80px", maxWidth: "960px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "44px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>TESTIMONIALS</p>
