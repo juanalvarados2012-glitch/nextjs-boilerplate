@@ -394,7 +394,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
             <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "16px" }}>✦ Try Free</button>
             <button onClick={goBuy} className="o" style={{ padding: "16px 24px", fontSize: "15px" }}>Get Pro — $49</button>
           </div>
-          <p style={{ color: "#444", fontSize: "12px", marginTop: "16px" }}>🔒 Secure payment via Stripe · 7-day money-back guarantee</p>
+          <p style={{ color: "#444", fontSize: "12px", marginTop: "16px" }}>🔒 Secure payment via Stripe</p>
         </div>
       </section>
 
@@ -1137,7 +1137,7 @@ function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean>
         </button>
       </div>
       {error && <p style={{ color: "#ff6b6b", fontSize: "12px", marginTop: "10px" }}>{error}</p>}
-      <p style={{ color: "#333", fontSize: "11px", marginTop: "14px" }}>🔒 One-time $49 · 7-day money-back guarantee</p>
+      <p style={{ color: "#333", fontSize: "11px", marginTop: "14px" }}>🔒 One-time $49</p>
     </>
   );
 }
