@@ -492,6 +492,24 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         </div>
       </section>
 
+      <section style={{ padding: "0 20px 60px", maxWidth: "700px", margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "10px" }}>
+          {[
+            { icon: "🔒", title: "Privacy Policy", desc: "Your data stays yours. We never sell it.", href: "/privacy" },
+            { icon: "📄", title: "Terms of Service", desc: "What you can expect from us and vice versa.", href: "/terms" },
+            { icon: "↩", title: "Refund Policy", desc: "Refund requests reviewed within 7 days.", href: "/refund" },
+          ].map((p, i) => (
+            <a key={i} href={p.href} style={{ display: "block", padding: "18px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderRadius: "10px", textDecoration: "none", transition: "border-color .2s" }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = GOLD + "40")}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,.06)")}>
+              <div style={{ fontSize: "20px", marginBottom: "8px" }}>{p.icon}</div>
+              <p style={{ color: "#EDE5D4", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>{p.title}</p>
+              <p style={{ color: "#555", fontSize: "12px", lineHeight: "1.5" }}>{p.desc}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
       <section style={{ padding: "0 20px 100px", maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div className="card-g" style={{ padding: "40px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>GET STARTED</p>
