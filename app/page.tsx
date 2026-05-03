@@ -511,6 +511,9 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           <span style={{ color: "#333", fontSize: "11px", letterSpacing: ".1em" }}>BRANDMIND © 2025</span>
         </div>
         <a href="mailto:juanalvarados2012@gmail.com" style={{ color: "#444", fontSize: "11px", textDecoration: "none" }}>juanalvarados2012@gmail.com</a>
+        <a href="/privacy" style={{ color: "#444", fontSize: "11px", textDecoration: "none" }}>Privacy Policy</a>
+        <a href="/terms" style={{ color: "#444", fontSize: "11px", textDecoration: "none" }}>Terms of Service</a>
+        <a href="/refund" style={{ color: "#444", fontSize: "11px", textDecoration: "none" }}>Refund Policy</a>
       </footer>
     </div>
   );
