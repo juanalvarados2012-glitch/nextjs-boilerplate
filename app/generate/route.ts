@@ -5,7 +5,7 @@ const MODEL = "llama3-70b-8192";
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, max_tokens = 1200 } = await req.json();
     if (!prompt) return NextResponse.json({ error: "No prompt" }, { status: 400 });
 
     const res = await fetch(GROQ_API, {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: MODEL,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 1200,
+        max_tokens: Math.min(max_tokens, 4000),
         temperature: 0.7,
       }),
     });

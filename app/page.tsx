@@ -7,18 +7,18 @@ const BG = "#070809";
 const STRIPE = "https://buy.stripe.com/cNi7sN9iBfwQ7VG1HU4Vy03";
 const goBuy = () => window.open(STRIPE, "_blank");
 
-async function callGroq(prompt: string): Promise<string> {
+async function callGroq(prompt: string, maxTokens = 1200): Promise<string> {
   const res = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, max_tokens: maxTokens }),
   });
   const data = await res.json();
   return data.text || "";
 }
 
-async function callAI(prompt: string): Promise<any> {
-  const text = await callGroq(prompt);
+async function callAI(prompt: string, maxTokens = 1200): Promise<any> {
+  const text = await callGroq(prompt, maxTokens);
   const clean = text.replace(/```json|```/g, "").trim();
   const match = clean.match(/\{[\s\S]*\}/);
   if (!match) throw new Error("no json");
@@ -419,8 +419,8 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
 
         <div className="card" style={{ padding: "20px", marginBottom: "14px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>INSTAGRAM POSTS — 6 Ready to Post</p>
-            <span style={{ color: "#333", fontSize: "11px" }}>+ 24 more</span>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>INSTAGRAM POSTS — 30 Generated</p>
+            <span style={{ color: "#444", fontSize: "11px" }}>Sample preview</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "10px" }}>
             {[
@@ -769,14 +769,19 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
     setGenStatus("running");
     const ctx = `Brand: ${form.name} | Industry: ${form.industry} | Values: ${form.values.join(", ")} | Audience: ${form.audience} | Style: ${form.style}`;
     try {
-      const [p, c, r, b] = await Promise.all([
-        callAI(`Social media expert. 6 Instagram posts for this brand. ${ctx}\nReturn ONLY raw JSON: {"posts":[{"hook":"","caption":"","hashtags":""}]}`),
+      const postPrompt = (range: string) =>
+        `Social media expert. Write 10 unique Instagram posts (${range}) for this brand. ${ctx}\nReturn ONLY raw JSON: {"posts":[{"hook":"","caption":"","hashtags":""}]}`;
+      const [p1, p2, p3, c, r, b] = await Promise.all([
+        callAI(postPrompt("posts 1-10"), 2500),
+        callAI(postPrompt("posts 11-20"), 2500),
+        callAI(postPrompt("posts 21-30"), 2500),
         callAI(`Conversion copywriter. Website copy. ${ctx}\nReturn ONLY raw JSON: {"hero":{"headline":"","subheadline":"","cta":""},"about":{"headline":"","body":""},"services":{"headline":"","items":[{"name":"","desc":""}]},"social_proof":""}`),
         callAI(`Video scriptwriter. 3 Reel scripts. ${ctx}\nReturn ONLY raw JSON: {"reels":[{"title":"","hook":"","body":"","cta":"","duration":""}]}`),
         callAI(`Social media bios. ${ctx}\nReturn ONLY raw JSON: {"instagram":{"bio":"","link_cta":""},"tiktok":{"bio":""},"linkedin":{"headline":"","summary":""},"twitter":{"bio":""}}`),
       ]);
       const fb = buildFallbackContent(form);
-      const content = { posts: p?.posts || fb.posts, copy: c || fb.copy, reels: r?.reels || fb.reels, bio: b || fb.bio };
+      const allPosts = [...(p1?.posts || []), ...(p2?.posts || []), ...(p3?.posts || [])];
+      const content = { posts: allPosts.length > 0 ? allPosts : fb.posts, copy: c || fb.copy, reels: r?.reels || fb.reels, bio: b || fb.bio };
       setAllContent(content);
       setGenStatus("done");
       if (onUpdateKitContent && currentKitId) onUpdateKitContent(currentKitId, content);
