@@ -195,7 +195,7 @@ const STEP_LABELS = ["Brand Name","Industry","Values","Audience","Style"];
 const LOAD_MSGS = ["Analyzing your brand…","Building your identity…","Crafting your voice…","Designing your palette…","Finalizing your kit…"];
 const TESTIMONIALS = [
   {name:"Sofia R.",role:"Founder, Lumé Studio",text:"Generated my entire brand in 4 minutes. The color palette was exactly what I had in mind.",stars:5},
-  {name:"Marcus T.",role:"E-commerce, Forge Co.",text:"The 30 posts alone saved me 6 hours this week. Every caption sounds like me, not a robot.",stars:5},
+  {name:"Marcus T.",role:"E-commerce, Forge Co.",text:"The 6 posts alone saved me hours this week. Every caption sounds like me, not a robot.",stars:5},
   {name:"Priya K.",role:"Health & Wellness Coach",text:"I've paid agencies $2,000 for less. This is genuinely the best $49 I've spent.",stars:5},
 ];
 
@@ -355,7 +355,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           </div>
           <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(44px,8vw,92px)", fontWeight: "900", color: "#EDE5D4", lineHeight: "1.04", marginBottom: "4px" }}>Your brand.</h1>
           <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(44px,8vw,92px)", fontWeight: "900", color: GOLD, lineHeight: "1.04", marginBottom: "32px", fontStyle: "italic" }}>Your content. Automated.</h1>
-          <p style={{ color: "#999", fontSize: "18px", maxWidth: "500px", margin: "0 auto 44px", lineHeight: "1.8" }}>Brand identity + 30 posts + website copy + Reel scripts. All in your voice. All in under 2 minutes.</p>
+          <p style={{ color: "#999", fontSize: "18px", maxWidth: "500px", margin: "0 auto 44px", lineHeight: "1.8" }}>Brand identity + 6 posts + website copy + Reel scripts. All in your voice. All in under 2 minutes.</p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
             <button onClick={onStart} className="g" style={{ padding: "18px 48px", fontSize: "16px", borderRadius: "10px" }}>✦ Try Free — Generate My Brand</button>
             <button onClick={goBuy} className="o" style={{ padding: "18px 28px", fontSize: "15px" }}>Buy Now — $49</button>
@@ -419,7 +419,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
 
         <div className="card" style={{ padding: "20px", marginBottom: "14px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>INSTAGRAM POSTS — 30 Generated</p>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>INSTAGRAM POSTS — 6 Generated</p>
             <span style={{ color: "#444", fontSize: "11px" }}>Sample preview</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "10px" }}>
@@ -769,19 +769,14 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
     setGenStatus("running");
     const ctx = `Brand: ${form.name} | Industry: ${form.industry} | Values: ${form.values.join(", ")} | Audience: ${form.audience} | Style: ${form.style}`;
     try {
-      const postPrompt = (range: string) =>
-        `Social media expert. Write 10 unique Instagram posts (${range}) for this brand. ${ctx}\nReturn ONLY raw JSON: {"posts":[{"hook":"","caption":"","hashtags":""}]}`;
-      const [p1, p2, p3, c, r, b] = await Promise.all([
-        callAI(postPrompt("posts 1-10"), 2500),
-        callAI(postPrompt("posts 11-20"), 2500),
-        callAI(postPrompt("posts 21-30"), 2500),
+      const [p, c, r, b] = await Promise.all([
+        callAI(`Social media expert. 6 Instagram posts for this brand. ${ctx}\nReturn ONLY raw JSON: {"posts":[{"hook":"","caption":"","hashtags":""}]}`),
         callAI(`Conversion copywriter. Website copy. ${ctx}\nReturn ONLY raw JSON: {"hero":{"headline":"","subheadline":"","cta":""},"about":{"headline":"","body":""},"services":{"headline":"","items":[{"name":"","desc":""}]},"social_proof":""}`),
         callAI(`Video scriptwriter. 3 Reel scripts. ${ctx}\nReturn ONLY raw JSON: {"reels":[{"title":"","hook":"","body":"","cta":"","duration":""}]}`),
         callAI(`Social media bios. ${ctx}\nReturn ONLY raw JSON: {"instagram":{"bio":"","link_cta":""},"tiktok":{"bio":""},"linkedin":{"headline":"","summary":""},"twitter":{"bio":""}}`),
       ]);
       const fb = buildFallbackContent(form);
-      const allPosts = [...(p1?.posts || []), ...(p2?.posts || []), ...(p3?.posts || [])];
-      const content = { posts: allPosts.length > 0 ? allPosts : fb.posts, copy: c || fb.copy, reels: r?.reels || fb.reels, bio: b || fb.bio };
+      const content = { posts: p?.posts || fb.posts, copy: c || fb.copy, reels: r?.reels || fb.reels, bio: b || fb.bio };
       setAllContent(content);
       setGenStatus("done");
       if (onUpdateKitContent && currentKitId) onUpdateKitContent(currentKitId, content);
@@ -934,7 +929,7 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
               {genStatus === "idle" && isPremium && <>
                 <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "8px" }}>CONTENT ENGINE</p>
                 <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px", color: "#EDE5D4", marginBottom: "7px" }}>Generate all your content</h3>
-                <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px" }}>30 posts, website copy, Reel scripts, and bios — in your brand voice.</p>
+                <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px" }}>6 posts, website copy, Reel scripts, and bios — in your brand voice.</p>
                 <button onClick={generateAll} className="g" style={{ padding: "14px 36px", fontSize: "15px" }}>✦ Generate All Content</button>
               </>}
               {genStatus === "running" && (
@@ -1243,7 +1238,7 @@ function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean>
     <>
       <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "8px" }}>PRO FEATURE</p>
       <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px", color: "#EDE5D4", marginBottom: "7px" }}>Unlock your full content kit</h3>
-      <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px", lineHeight: "1.7" }}>30 posts, website copy, Reel scripts & bios — generated in your brand voice.</p>
+      <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px", lineHeight: "1.7" }}>6 posts, website copy, Reel scripts & bios — generated in your brand voice.</p>
       <input
         type="email"
         value={email}
