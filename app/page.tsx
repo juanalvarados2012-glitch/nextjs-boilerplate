@@ -32,6 +32,9 @@ export default function Home() {
   const [isPremium, setIsPremium] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [savedKits, setSavedKits] = useState<any[]>([]);
+  const [currentKitId, setCurrentKitId] = useState<string | null>(null);
+  const [prevView, setPrevView] = useState("landing");
 
   const login = useCallback(async (email: string): Promise<boolean> => {
     const clean = email.toLowerCase().trim();
@@ -57,9 +60,47 @@ export default function Home() {
   const logout = useCallback(() => {
     setUserEmail(null);
     setIsPremium(false);
+    setSavedKits([]);
     localStorage.removeItem("brandmind_email");
     localStorage.removeItem("brandmind_premium_email");
   }, []);
+
+  useEffect(() => {
+    if (!userEmail) { setSavedKits([]); return; }
+    try {
+      const raw = localStorage.getItem(`bm_kits_${userEmail}`);
+      if (raw) setSavedKits(JSON.parse(raw));
+    } catch {}
+  }, [userEmail]);
+
+  const persistKits = useCallback((next: any[], email: string | null) => {
+    setSavedKits(next);
+    if (email) localStorage.setItem(`bm_kits_${email}`, JSON.stringify(next));
+  }, []);
+
+  const updateKitContent = useCallback((kitId: string, content: any) => {
+    setSavedKits(prev => {
+      const next = prev.map((k: any) => k.id === kitId ? { ...k, allContent: content } : k);
+      if (userEmail) localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+      return next;
+    });
+  }, [userEmail]);
+
+  const loadKit = useCallback((kitId: string) => {
+    setSavedKits(prev => {
+      const found = prev.find((k: any) => k.id === kitId);
+      if (found) { setCurrentKitId(found.id); setForm(found.form); setKit(found.kit); setView("results"); }
+      return prev;
+    });
+  }, []);
+
+  const deleteKit = useCallback((kitId: string) => {
+    setSavedKits(prev => {
+      const next = prev.filter((k: any) => k.id !== kitId);
+      if (userEmail) localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+      return next;
+    });
+  }, [userEmail]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -75,6 +116,8 @@ export default function Home() {
   }, [login]);
 
   const generate = async (data: any) => {
+    const kitId = Date.now().toString();
+    setCurrentKitId(kitId);
     setForm(data);
     setView("loading");
     const prompt = `You are a senior brand strategist. Design a complete brand identity.
@@ -82,12 +125,21 @@ Brand: ${data.name} | Industry: ${data.industry} | Values: ${data.values.join(",
 Return ONLY raw JSON, no markdown:
 {"taglines":["max 7 words","option 2","option 3"],"colors":[{"name":"Primary","hex":"#XXXXXX","role":"Primary"},{"name":"Secondary","hex":"#XXXXXX","role":"Secondary"},{"name":"Accent","hex":"#XXXXXX","role":"Accent"},{"name":"Light","hex":"#XXXXXX","role":"Light"},{"name":"Dark","hex":"#XXXXXX","role":"Dark"}],"typography":{"display":{"name":"Google Font","description":"Use for headlines"},"body":{"name":"Google Font","description":"Use for body"}},"brandVoice":"2-3 sentences","brandStory":"2-3 sentences"}
 RULES: Real hex codes only. Real Google Font names only.`;
+    const addToSaved = (parsedKit: any, email: string | null, prev: any[]) => {
+      const entry = { id: kitId, form: data, kit: parsedKit, allContent: null, createdAt: Date.now() };
+      const next = [entry, ...prev.filter((k: any) => k.id !== kitId)].slice(0, 10);
+      if (email) localStorage.setItem(`bm_kits_${email}`, JSON.stringify(next));
+      return next;
+    };
     try {
       const parsed = await callAI(prompt);
       if (!parsed.colors || !parsed.taglines) throw new Error("incomplete");
       setKit(parsed);
+      setSavedKits(prev => addToSaved(parsed, userEmail, prev));
     } catch (e) {
-      setKit(buildFallback(data));
+      const fb = buildFallback(data);
+      setKit(fb);
+      setSavedKits(prev => addToSaved(fb, userEmail, prev));
     } finally {
       setView("results");
     }
@@ -113,10 +165,18 @@ RULES: Real hex codes only. Real Google Font names only.`;
         ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:#1e1e1e;}
       `}</style>
 
-      {view === "landing" && <Landing onStart={() => setView("generator")} userEmail={userEmail} isPremium={isPremium} onOpenLogin={() => setShowLoginModal(true)} onLogout={logout} />}
-      {view === "generator" && <Generator onBack={() => setView("landing")} onGenerate={generate} userEmail={userEmail} isPremium={isPremium} onOpenLogin={() => setShowLoginModal(true)} onLogout={logout} />}
+      {view === "landing" && <Landing onStart={() => setView("generator")} userEmail={userEmail} isPremium={isPremium} onOpenLogin={() => setShowLoginModal(true)} onLogout={logout} savedKits={savedKits} onLoadKit={loadKit} />}
+      {view === "generator" && <Generator onBack={() => setView(prevView)} onGenerate={generate} userEmail={userEmail} isPremium={isPremium} onOpenLogin={() => setShowLoginModal(true)} onLogout={logout} />}
       {view === "loading" && <LoadingScreen />}
-      {view === "results" && kit && <Results kit={kit} form={form} onRestart={() => { setKit(null); setForm(null); setView("landing"); }} callAI={callAI} isPremium={isPremium} onLogin={login} userEmail={userEmail} onLogout={logout} onOpenLogin={() => setShowLoginModal(true)} />}
+      {view === "results" && kit && (
+        <Results key={currentKitId} kit={kit} form={form}
+          onRestart={() => { setKit(null); setForm(null); setView("landing"); }}
+          onNewBrand={() => { setPrevView("results"); setView("generator"); }}
+          callAI={callAI} isPremium={isPremium} onLogin={login} userEmail={userEmail} onLogout={logout} onOpenLogin={() => setShowLoginModal(true)}
+          savedKits={savedKits} currentKitId={currentKitId}
+          onUpdateKitContent={updateKitContent} onLoadKit={loadKit} onDeleteKit={deleteKit}
+        />
+      )}
       {showLoginModal && <LoginModal onLogin={login} onClose={() => setShowLoginModal(false)} />}
     </div>
   );
@@ -526,15 +586,17 @@ function LoadingScreen() {
   );
 }
 
-function Results({ kit, form, onRestart, callAI, isPremium, onLogin, userEmail, onLogout, onOpenLogin }: any) {
+function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin, userEmail, onLogout, onOpenLogin, savedKits = [], currentKitId, onUpdateKitContent, onLoadKit, onDeleteKit }: any) {
+  const savedEntry = (savedKits as any[]).find((k: any) => k.id === currentKitId);
   const [copied, setCopied] = useState<string | null>(null);
   const [tagI, setTagI] = useState(0);
   const [activeTab, setActiveTab] = useState("brand");
-  const [allContent, setAllContent] = useState<any>({});
-  const [genStatus, setGenStatus] = useState("idle");
+  const [allContent, setAllContent] = useState<any>(savedEntry?.allContent || {});
+  const [genStatus, setGenStatus] = useState(savedEntry?.allContent ? "done" : "idle");
   const [kitData, setKitData] = useState(kit);
   const [regenLoading, setRegenLoading] = useState<any>({});
   const [editMode, setEditMode] = useState(false);
+  const [showKitsPanel, setShowKitsPanel] = useState(false);
 
   const updatePost = (i: number, field: string, v: string) =>
     setAllContent((p: any) => ({ ...p, posts: (p.posts || []).map((post: any, idx: number) => idx === i ? { ...post, [field]: v } : post) }));
@@ -586,11 +648,15 @@ function Results({ kit, form, onRestart, callAI, isPremium, onLogin, userEmail, 
         callAI(`Social media bios. ${ctx}\nReturn ONLY raw JSON: {"instagram":{"bio":"","link_cta":""},"tiktok":{"bio":""},"linkedin":{"headline":"","summary":""},"twitter":{"bio":""}}`),
       ]);
       const fb = buildFallbackContent(form);
-      setAllContent({ posts: p?.posts || fb.posts, copy: c || fb.copy, reels: r?.reels || fb.reels, bio: b || fb.bio });
+      const content = { posts: p?.posts || fb.posts, copy: c || fb.copy, reels: r?.reels || fb.reels, bio: b || fb.bio };
+      setAllContent(content);
       setGenStatus("done");
+      if (onUpdateKitContent && currentKitId) onUpdateKitContent(currentKitId, content);
     } catch (e) {
-      setAllContent(buildFallbackContent(form));
+      const content = buildFallbackContent(form);
+      setAllContent(content);
       setGenStatus("done");
+      if (onUpdateKitContent && currentKitId) onUpdateKitContent(currentKitId, content);
     }
   };
 
@@ -619,14 +685,20 @@ function Results({ kit, form, onRestart, callAI, isPremium, onLogin, userEmail, 
           </div>
         </div>
         <div style={{ display: "flex", gap: "7px", alignItems: "center" }}>
+          {isPremium && savedKits.length > 0 && (
+            <button onClick={() => setShowKitsPanel(p => !p)} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>
+              ◈ {savedKits.length}/10
+            </button>
+          )}
           {isPremium && (
             <button onClick={() => setEditMode(p => !p)} className={editMode ? "g" : "o"} style={{ padding: "7px 12px", fontSize: "12px" }}>
               {editMode ? "✓ Done" : "✏ Edit"}
             </button>
           )}
-          <button onClick={onRestart} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↺ New</button>
+          <button onClick={isPremium ? onNewBrand : onRestart} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↺ New</button>
           <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
+        {showKitsPanel && <KitsPanel kits={savedKits} currentKitId={currentKitId} onLoad={(id: string) => { onLoadKit(id); setShowKitsPanel(false); }} onDelete={onDeleteKit} onClose={() => setShowKitsPanel(false)} />}
       </div>
 
       <div style={{ borderBottom: "1px solid rgba(255,255,255,.05)", overflowX: "auto", display: "flex", background: "rgba(7,8,9,.8)" }}>
@@ -772,6 +844,46 @@ function Results({ kit, form, onRestart, callAI, isPremium, onLogin, userEmail, 
             )}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function KitsPanel({ kits, currentKitId, onLoad, onDelete, onClose }: any) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", justifyContent: "flex-end" }}>
+      <div onClick={onClose} style={{ flex: 1, background: "rgba(0,0,0,.55)", backdropFilter: "blur(2px)" }} />
+      <div style={{ width: "min(320px, 94vw)", background: "#0c0d0e", borderLeft: "1px solid rgba(255,255,255,.07)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "18px 16px 14px", borderBottom: "1px solid rgba(255,255,255,.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700" }}>MY PACKAGES</p>
+            <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{kits.length}/10 generated</p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "20px", lineHeight: 1 }}>×</button>
+        </div>
+        <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: "9px" }}>
+          {kits.map((k: any) => (
+            <div key={k.id} onClick={() => onLoad(k.id)} style={{ padding: "13px", background: k.id === currentKitId ? `${GOLD}0e` : "rgba(255,255,255,.025)", border: `1px solid ${k.id === currentKitId ? GOLD + "35" : "rgba(255,255,255,.06)"}`, borderRadius: "10px", cursor: "pointer", position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "7px" }}>
+                <MiniLogo L={k.form.name[0].toUpperCase()} color={GOLD} style={k.form.style} size={30} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: "#EDE5D4", fontSize: "13px", fontFamily: "'Playfair Display',serif", fontWeight: "700", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.form.name}</div>
+                  <div style={{ color: "#555", fontSize: "10px" }}>{k.form.industry}</div>
+                </div>
+                {k.id === currentKitId && <span style={{ color: GOLD, fontSize: "9px", letterSpacing: ".1em" }}>ACTIVE</span>}
+              </div>
+              <p style={{ color: "#555", fontSize: "11px", fontStyle: "italic", marginBottom: "8px", lineHeight: "1.4" }}>{k.kit.taglines?.[0]}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                {k.kit.colors?.slice(0, 5).map((c: any, i: number) => (
+                  <div key={i} style={{ width: "14px", height: "14px", borderRadius: "50%", background: c.hex, border: "1px solid rgba(255,255,255,.08)" }} />
+                ))}
+                {k.allContent && <span style={{ marginLeft: "auto", color: "#4CAF50", fontSize: "9px", letterSpacing: ".08em" }}>✓ CONTENT</span>}
+              </div>
+              <button onClick={e => { e.stopPropagation(); onDelete(k.id); }} style={{ position: "absolute", top: "8px", right: "8px", background: "none", border: "none", color: "#2a2a2a", cursor: "pointer", fontSize: "16px", lineHeight: 1, padding: "2px 5px" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#666")} onMouseLeave={e => (e.currentTarget.style.color = "#2a2a2a")}>×</button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
