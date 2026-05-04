@@ -342,7 +342,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           <span style={{ fontFamily: "'Playfair Display',serif", color: "#EDE5D4", fontSize: "15px", fontWeight: "700" }}>BrandMind</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {!isPremium && <button onClick={goBuy} className="g" style={{ padding: "8px 18px", fontSize: "12px" }}>Get Pro — $49</button>}
+          {!isPremium && <button onClick={goBuy} className="g" style={{ padding: "8px 18px", fontSize: "12px" }}>Unlock Full Access — $49</button>}
           <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
       </nav>
@@ -357,7 +357,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(44px,8vw,92px)", fontWeight: "900", color: GOLD, lineHeight: "1.04", marginBottom: "32px", fontStyle: "italic" }}>Your content. Automated.</h1>
           <p style={{ color: "#999", fontSize: "18px", maxWidth: "500px", margin: "0 auto 44px", lineHeight: "1.8" }}>Brand identity + 6 posts + website copy + Reel scripts. All in your voice. All in under 2 minutes.</p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
-            <button onClick={onStart} className="g" style={{ padding: "18px 48px", fontSize: "16px", borderRadius: "10px" }}>✦ Try Free — Generate My Brand</button>
+            <button onClick={onStart} className="g" style={{ padding: "18px 48px", fontSize: "16px", borderRadius: "10px" }}>✦ Create Your Brand</button>
             <button onClick={goBuy} className="o" style={{ padding: "18px 28px", fontSize: "15px" }}>Buy Now — $49</button>
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
@@ -514,10 +514,10 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         <div className="card-g" style={{ padding: "40px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>GET STARTED</p>
           <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,44px)", color: "#EDE5D4", marginBottom: "12px" }}>Ready to build your brand?</h2>
-          <p style={{ color: "#888", fontSize: "15px", marginBottom: "28px", lineHeight: "1.8" }}>Free to try. $49 one-time to unlock everything.</p>
+          <p style={{ color: "#888", fontSize: "15px", marginBottom: "28px", lineHeight: "1.8" }}>$49 one-time. Full access, forever.</p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "16px" }}>✦ Try Free</button>
-            <button onClick={goBuy} className="o" style={{ padding: "16px 24px", fontSize: "15px" }}>Get Pro — $49</button>
+            <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "16px" }}>✦ Create Your Brand</button>
+            <button onClick={goBuy} className="o" style={{ padding: "16px 24px", fontSize: "15px" }}>Unlock Full Access — $49</button>
           </div>
           <p style={{ color: "#444", fontSize: "12px", marginTop: "16px" }}>🔒 Secure payment via Stripe</p>
         </div>
@@ -1254,7 +1254,7 @@ function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean>
           className="g"
           style={{ padding: "14px 36px", fontSize: "15px", width: "100%", maxWidth: "320px", opacity: buying ? 0.7 : 1 }}
         >
-          {buying ? "Loading…" : "✦ Get Pro — $49"}
+          {buying ? "Loading…" : "✦ Unlock Full Access — $49"}
         </button>
         <button
           onClick={handleVerify}
