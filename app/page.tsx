@@ -342,7 +342,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           <span style={{ fontFamily: "'Playfair Display',serif", color: "#EDE5D4", fontSize: "15px", fontWeight: "700" }}>BrandMind</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {!isPremium && <button onClick={goBuy} className="g" style={{ padding: "8px 18px", fontSize: "12px" }}>Get Pro — $49</button>}
+          {!isPremium && <button onClick={goBuy} className="g" style={{ padding: "8px 18px", fontSize: "12px" }}>Unlock Full Access — $49</button>}
           <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
       </nav>
@@ -514,10 +514,10 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         <div className="card-g" style={{ padding: "40px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>GET STARTED</p>
           <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,44px)", color: "#EDE5D4", marginBottom: "12px" }}>Ready to build your brand?</h2>
-          <p style={{ color: "#888", fontSize: "15px", marginBottom: "28px", lineHeight: "1.8" }}>Free to try. $49 one-time to unlock everything.</p>
+          <p style={{ color: "#888", fontSize: "15px", marginBottom: "28px", lineHeight: "1.8" }}>$49 one-time payment. Full access, forever.</p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "16px" }}>✦ Try Free</button>
-            <button onClick={goBuy} className="o" style={{ padding: "16px 24px", fontSize: "15px" }}>Get Pro — $49</button>
+            <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "16px" }}>✦ Start Building</button>
+            <button onClick={goBuy} className="o" style={{ padding: "16px 24px", fontSize: "15px" }}>Unlock Full Access — $49</button>
           </div>
           <p style={{ color: "#444", fontSize: "12px", marginTop: "16px" }}>🔒 Secure payment via Stripe</p>
         </div>
@@ -1254,7 +1254,7 @@ function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean>
           className="g"
           style={{ padding: "14px 36px", fontSize: "15px", width: "100%", maxWidth: "320px", opacity: buying ? 0.7 : 1 }}
         >
-          {buying ? "Loading…" : "✦ Get Pro — $49"}
+          {buying ? "Loading…" : "✦ Unlock Full Access — $49"}
         </button>
         <button
           onClick={handleVerify}
