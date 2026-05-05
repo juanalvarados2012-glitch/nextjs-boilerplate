@@ -22,8 +22,8 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
-      if (!res.ok) { setError("Wrong password."); setLoading(false); return; }
       const data = await res.json();
+      if (!res.ok) { setError(data.error || "Error desconocido."); setLoading(false); return; }
       setCustomers(data.customers);
       setTotal(data.total);
       setAuthed(true);
