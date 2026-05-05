@@ -510,6 +510,67 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         </div>
       </section>
 
+      <section style={{ padding: "0 20px 80px", maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>PRICING</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4", marginBottom: "10px" }}>Free vs Pro</h2>
+          <p style={{ color: "#666", fontSize: "14px" }}>See exactly what you get with each plan.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          {/* Free */}
+          <div className="card" style={{ padding: "28px 24px" }}>
+            <p style={{ color: "#888", fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "6px" }}>FREE</p>
+            <p style={{ fontFamily: "'Playfair Display',serif", fontSize: "28px", color: "#EDE5D4", fontWeight: "700", marginBottom: "4px" }}>$0</p>
+            <p style={{ color: "#444", fontSize: "12px", marginBottom: "24px" }}>Start for free, always</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[
+                { ok: true,  label: "Brand identity (logo, colors, typography)" },
+                { ok: true,  label: "Brand voice & story" },
+                { ok: true,  label: "3 tagline options" },
+                { ok: false, label: "6 social media posts" },
+                { ok: false, label: "Website copy" },
+                { ok: false, label: "Reel scripts" },
+                { ok: false, label: "Platform bios" },
+                { ok: false, label: "Save & manage brand kits" },
+                { ok: false, label: "Edit & export content" },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                  <span style={{ fontSize: "14px", marginTop: "1px", flexShrink: 0, color: item.ok ? "#4CAF50" : "#333" }}>{item.ok ? "✓" : "✕"}</span>
+                  <span style={{ color: item.ok ? "#bbb" : "#3a3a3a", fontSize: "13px", lineHeight: "1.4" }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={onStart} className="o" style={{ width: "100%", padding: "12px", fontSize: "13px", marginTop: "28px" }}>✦ Create Your Brand</button>
+          </div>
+          {/* Pro */}
+          <div className="card-g" style={{ padding: "28px 24px", position: "relative" }}>
+            <div style={{ position: "absolute", top: "-11px", left: "50%", transform: "translateX(-50%)", background: GOLD, color: "#0a0806", fontSize: "9px", fontWeight: "800", letterSpacing: ".15em", padding: "4px 12px", borderRadius: "100px" }}>MOST POPULAR</div>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "6px" }}>PRO</p>
+            <p style={{ fontFamily: "'Playfair Display',serif", fontSize: "28px", color: "#EDE5D4", fontWeight: "700", marginBottom: "4px" }}>$49</p>
+            <p style={{ color: "#666", fontSize: "12px", marginBottom: "24px" }}>One-time payment, forever</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[
+                "Brand identity (logo, colors, typography)",
+                "Brand voice & story",
+                "3 tagline options",
+                "6 social media posts",
+                "Website copy",
+                "Reel scripts",
+                "Platform bios",
+                "Save & manage brand kits",
+                "Edit & export content",
+              ].map((label, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                  <span style={{ fontSize: "14px", marginTop: "1px", flexShrink: 0, color: "#4CAF50" }}>✓</span>
+                  <span style={{ color: "#ccc", fontSize: "13px", lineHeight: "1.4" }}>{label}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={goBuy} className="g" style={{ width: "100%", padding: "12px", fontSize: "13px", marginTop: "28px" }}>Unlock Full Access — $49</button>
+          </div>
+        </div>
+      </section>
+
       <section style={{ padding: "0 20px 100px", maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div className="card-g" style={{ padding: "40px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>GET STARTED</p>
