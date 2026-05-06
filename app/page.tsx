@@ -370,16 +370,16 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
 
       <section style={{ padding: "0 20px 100px", maxWidth: "760px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
-          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>CÓMO FUNCIONA</p>
-          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4", marginBottom: "12px" }}>Tu marca en 4 pasos</h2>
-          <p style={{ color: "#666", fontSize: "14px" }}>Menos de 2 minutos. Sin diseñador. Sin agencia.</p>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>HOW IT WORKS</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4", marginBottom: "12px" }}>Your brand in 4 steps</h2>
+          <p style={{ color: "#666", fontSize: "14px" }}>Under 2 minutes. No designer. No agency.</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
           {[
-            { step: "01", icon: "✦", title: 'Haz clic en "Create Your Brand"', desc: 'Pulsa el botón dorado en la parte de arriba de la página para comenzar. Es gratis, no necesitas tarjeta.' },
-            { step: "02", icon: "✎", title: "Responde 5 preguntas rápidas", desc: "Nombre de tu marca, industria, valores, audiencia y estilo visual. Solo toma 60 segundos." },
-            { step: "03", icon: "◈", title: "La IA genera tu identidad completa", desc: "Logo en 5 estilos, paleta de colores, tipografía, taglines, voz de marca e historia. Todo en tu voz." },
-            { step: "04", icon: "↓", title: "Desbloquea todo el contenido con Pro", desc: "Con Pro obtienes además 6 posts para redes, copy para tu web, scripts para Reels y bios para cada plataforma." },
+            { step: "01", icon: "✦", title: 'Click "Create Your Brand"', desc: 'Hit the gold button at the top of the page to get started. It\'s free — no credit card needed.' },
+            { step: "02", icon: "✎", title: "Answer 5 quick questions", desc: "Brand name, industry, values, audience, and visual style. Takes about 60 seconds." },
+            { step: "03", icon: "◈", title: "AI builds your full identity", desc: "Logo in 5 styles, color palette, typography, taglines, brand voice and story — all generated in your voice." },
+            { step: "04", icon: "↓", title: "Unlock all content with Pro", desc: "Get 6 social media posts, website copy, Reel scripts, and bios for every platform." },
           ].map((s, i, arr) => (
             <div key={i} style={{ display: "flex", gap: "0", position: "relative" }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "24px" }}>
@@ -397,7 +397,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           ))}
         </div>
         <div style={{ marginTop: "44px", textAlign: "center" }}>
-          <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "15px" }}>✦ Empieza aquí — Es gratis</button>
+          <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "15px" }}>✦ Start here — It's free</button>
         </div>
       </section>
 
