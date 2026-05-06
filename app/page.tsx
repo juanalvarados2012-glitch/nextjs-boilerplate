@@ -368,6 +368,39 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         </div>
       </section>
 
+      <section style={{ padding: "0 20px 100px", maxWidth: "760px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>CÓMO FUNCIONA</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4", marginBottom: "12px" }}>Tu marca en 4 pasos</h2>
+          <p style={{ color: "#666", fontSize: "14px" }}>Menos de 2 minutos. Sin diseñador. Sin agencia.</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+          {[
+            { step: "01", icon: "✦", title: 'Haz clic en "Create Your Brand"', desc: 'Pulsa el botón dorado en la parte de arriba de la página para comenzar. Es gratis, no necesitas tarjeta.' },
+            { step: "02", icon: "✎", title: "Responde 5 preguntas rápidas", desc: "Nombre de tu marca, industria, valores, audiencia y estilo visual. Solo toma 60 segundos." },
+            { step: "03", icon: "◈", title: "La IA genera tu identidad completa", desc: "Logo en 5 estilos, paleta de colores, tipografía, taglines, voz de marca e historia. Todo en tu voz." },
+            { step: "04", icon: "↓", title: "Desbloquea todo el contenido con Pro", desc: "Con Pro obtienes además 6 posts para redes, copy para tu web, scripts para Reels y bios para cada plataforma." },
+          ].map((s, i, arr) => (
+            <div key={i} style={{ display: "flex", gap: "0", position: "relative" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "24px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: `linear-gradient(135deg,${GOLD}22,${GOLD}08)`, border: `1px solid ${GOLD}40`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ color: GOLD, fontSize: "16px" }}>{s.icon}</span>
+                </div>
+                {i < arr.length - 1 && <div style={{ width: "1px", flex: 1, background: "rgba(196,151,90,.12)", minHeight: "40px", margin: "8px 0" }} />}
+              </div>
+              <div style={{ paddingBottom: i < arr.length - 1 ? "36px" : "0", paddingTop: "10px" }}>
+                <span style={{ color: GOLD, fontSize: "9px", letterSpacing: ".2em", fontWeight: "700" }}>PASO {s.step}</span>
+                <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "18px", color: "#EDE5D4", margin: "4px 0 8px" }}>{s.title}</h3>
+                <p style={{ color: "#666", fontSize: "13px", lineHeight: "1.7", maxWidth: "520px" }}>{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: "44px", textAlign: "center" }}>
+          <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "15px" }}>✦ Empieza aquí — Es gratis</button>
+        </div>
+      </section>
+
       <section style={{ padding: "0 20px 100px", maxWidth: "960px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>SEE WHAT YOU GET</p>
