@@ -40,6 +40,7 @@ export default function Home() {
     const clean = email.toLowerCase().trim();
     setUserEmail(clean);
     localStorage.setItem("brandmind_email", clean);
+    let isPrem = false;
     try {
       const res = await fetch("/api/check-premium", {
         method: "POST",
@@ -50,11 +51,24 @@ export default function Home() {
       if (data.premium) {
         setIsPremium(true);
         localStorage.setItem("brandmind_premium_email", clean);
+        isPrem = true;
       }
-      return !!data.premium;
-    } catch {
-      return false;
-    }
+    } catch {}
+    // Load kits from server and merge with any local-only kits
+    fetch(`/api/kits?email=${encodeURIComponent(clean)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.kits?.length) return;
+        const localRaw = localStorage.getItem(`bm_kits_${clean}`);
+        const local: any[] = localRaw ? JSON.parse(localRaw) : [];
+        const serverIds = new Set(data.kits.map((k: any) => k.id));
+        const localOnly = local.filter((k: any) => !serverIds.has(k.id));
+        const merged = [...data.kits, ...localOnly].slice(0, 10);
+        setSavedKits(merged);
+        localStorage.setItem(`bm_kits_${clean}`, JSON.stringify(merged));
+      })
+      .catch(() => {});
+    return isPrem;
   }, []);
 
   const logout = useCallback(() => {
@@ -75,13 +89,27 @@ export default function Home() {
 
   const persistKits = useCallback((next: any[], email: string | null) => {
     setSavedKits(next);
-    if (email) localStorage.setItem(`bm_kits_${email}`, JSON.stringify(next));
+    if (email) {
+      localStorage.setItem(`bm_kits_${email}`, JSON.stringify(next));
+      fetch("/api/kits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, kits: next }),
+      }).catch(() => {});
+    }
   }, []);
 
   const updateKitContent = useCallback((kitId: string, content: any) => {
     setSavedKits(prev => {
       const next = prev.map((k: any) => k.id === kitId ? { ...k, allContent: content } : k);
-      if (userEmail) localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+      if (userEmail) {
+        localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+        fetch("/api/kits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userEmail, kits: next }),
+        }).catch(() => {});
+      }
       return next;
     });
   }, [userEmail]);
@@ -97,7 +125,14 @@ export default function Home() {
   const deleteKit = useCallback((kitId: string) => {
     setSavedKits(prev => {
       const next = prev.filter((k: any) => k.id !== kitId);
-      if (userEmail) localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+      if (userEmail) {
+        localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+        fetch("/api/kits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userEmail, kits: next }),
+        }).catch(() => {});
+      }
       return next;
     });
   }, [userEmail]);
@@ -199,8 +234,63 @@ const TESTIMONIALS = [
   {name:"Priya K.",role:"Health & Wellness Coach",text:"I've paid agencies $2,000 for less. This is genuinely the best $49 I've spent.",stars:5},
 ];
 
-function MiniLogo({ L, color, style, size }: any) {
+function MiniLogo({ L, name, color, style, size }: any) {
   const c = color; const s = size;
+
+  // Full-name landscape logo for large sizes
+  if (name && s >= 50) {
+    const w = Math.round(s * 2.2);
+    const h = s;
+    const n: string = name;
+    const fs = Math.max(s * 0.13, Math.min(s * 0.4, (s * 1.7) / Math.max(n.length, 1) / 0.62));
+
+    if (style === "modern") return (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+        <rect width={w} height={h} fill="#0A0E14"/>
+        <rect width={w} height={h * 0.07} fill={c} opacity=".9"/>
+        <path d={`M${w - h * 0.35} 0 L${w} 0 L${w} ${h * 0.35} Z`} fill={c} opacity=".18"/>
+        <text x={w / 2} y={h * 0.64} textAnchor="middle" fill="white" fontSize={fs} fontFamily="Arial Black,sans-serif" fontWeight="900">{n}</text>
+        <rect x={w * 0.08} y={h * 0.82} width={w * 0.84} height=".8" fill={c} opacity=".25"/>
+      </svg>
+    );
+    if (style === "classic") return (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+        <rect width={w} height={h} fill="#0C0A08"/>
+        <ellipse cx={w / 2} cy={h / 2} rx={w * 0.46} ry={h * 0.42} fill="none" stroke={c} strokeWidth="1" strokeOpacity=".45"/>
+        <line x1={w * 0.22} y1={h * 0.13} x2={w * 0.78} y2={h * 0.13} stroke={c} strokeWidth=".7" strokeOpacity=".35"/>
+        <line x1={w * 0.22} y1={h * 0.87} x2={w * 0.78} y2={h * 0.87} stroke={c} strokeWidth=".7" strokeOpacity=".35"/>
+        <text x={w / 2} y={h * 0.59} textAnchor="middle" fill={c} fontSize={fs} fontFamily="Georgia,serif" fontWeight="700" fontStyle="italic">{n}</text>
+      </svg>
+    );
+    if (style === "playful") return (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+        <rect width={w} height={h} fill="#0D0D0D"/>
+        <rect x={w * 0.04} y={h * 0.1} width={w * 0.92} height={h * 0.8} rx={h * 0.22} fill={c} opacity=".92"/>
+        <text x={w / 2} y={h * 0.63} textAnchor="middle" fill="#fff" fontSize={fs} fontFamily="Arial,sans-serif" fontWeight="700">{n}</text>
+      </svg>
+    );
+    if (style === "luxury") return (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+        <rect width={w} height={h} fill="#0A0705"/>
+        <rect x={h * 0.12} y={h * 0.12} width={w - h * 0.24} height={h * 0.76} fill="none" stroke={c} strokeWidth=".5" strokeOpacity=".3"/>
+        {[[[h*.1,h*.1],[h*.26,h*.1]],[[h*.1,h*.1],[h*.1,h*.26]],[[w-h*.1,h*.1],[w-h*.26,h*.1]],[[w-h*.1,h*.1],[w-h*.1,h*.26]],[[h*.1,h*.9],[h*.26,h*.9]],[[h*.1,h*.9],[h*.1,h*.74]],[[w-h*.1,h*.9],[w-h*.26,h*.9]],[[w-h*.1,h*.9],[w-h*.1,h*.74]]].map(([[x1,y1],[x2,y2]],i)=>(
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={c} strokeWidth="1.8" strokeOpacity=".75"/>
+        ))}
+        <text x={w / 2} y={h * 0.6} textAnchor="middle" fill={c} fontSize={fs * 0.82} fontFamily="Georgia,serif" fontWeight="400">{n.toUpperCase()}</text>
+      </svg>
+    );
+    // minimal
+    return (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+        <rect width={w} height={h} fill="#141618"/>
+        <rect width={w} height={h * 0.06} fill={c} opacity=".9"/>
+        <text x={w / 2} y={h * 0.64} textAnchor="middle" fill={c} fontSize={fs} fontFamily="Arial Black,sans-serif" fontWeight="900">{n}</text>
+        <text x={w / 2} y={h * 0.84} textAnchor="middle" fill={c} fontSize={fs * 0.3} fontFamily="Arial,sans-serif" fontWeight="400" opacity=".45" letterSpacing="3">BRAND IDENTITY</text>
+      </svg>
+    );
+  }
+
+  // Letter-based square logos for small sizes
   if (style === "modern") return (
     <svg width={s} height={s} viewBox="0 0 100 100" fill="none">
       <path d="M0 0 L80 0 L100 20 L100 100 L0 100 Z" fill={c} fillOpacity=".12"/>
@@ -332,6 +422,23 @@ function UserMenu({ userEmail, isPremium, onOpenLogin, onLogout }: any) {
   );
 }
 
+function FaqItem({ q, a, gold }: { q: string; a: string; gold: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ background: "rgba(255,255,255,.025)", border: `1px solid ${open ? gold + "30" : "rgba(255,255,255,.06)"}`, borderRadius: "10px", overflow: "hidden", transition: "border-color .2s" }}>
+      <button onClick={() => setOpen(p => !p)} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", textAlign: "left", gap: "12px" }}>
+        <span style={{ color: "#EDE5D4", fontSize: "14px", fontWeight: "600", lineHeight: "1.4" }}>{q}</span>
+        <span style={{ color: gold, fontSize: "18px", flexShrink: 0, transition: "transform .2s", transform: open ? "rotate(45deg)" : "none" }}>+</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 20px 16px" }}>
+          <p style={{ color: "#888", fontSize: "13px", lineHeight: "1.8", margin: 0 }}>{a}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) {
   const [count] = useState(() => Math.floor(Math.random() * 60) + 90);
   return (
@@ -413,7 +520,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
             {(["modern","classic","luxury","playful","minimal"] as const).map(s => (
               <div key={s} style={{ background: "rgba(0,0,0,.35)", borderRadius: "12px", padding: "18px 14px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", flex: "1", minWidth: "80px" }}>
-                <MiniLogo L="L" color={GOLD} style={s} size={58} />
+                <MiniLogo L="L" name="Lumé Studio" color={GOLD} style={s} size={58} />
                 <span style={{ color: "#444", fontSize: "9px", letterSpacing: ".1em", textTransform: "uppercase" }}>{s}</span>
               </div>
             ))}
@@ -521,6 +628,69 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
               <p style={{ color: "#EDE5D4", fontSize: "13px", fontWeight: "600" }}>{t.name}</p>
               <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>{t.role}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Value comparison */}
+      <section style={{ padding: "0 20px 80px", maxWidth: "820px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>THE MATH</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4", marginBottom: "10px" }}>What you'd pay otherwise</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "16px", alignItems: "center" }}>
+          <div className="card" style={{ padding: "24px" }}>
+            <p style={{ color: "#555", fontSize: "10px", letterSpacing: ".15em", fontWeight: "700", marginBottom: "12px" }}>HIRING AN AGENCY</p>
+            {[["Brand identity", "$800–$1,500"],["Social media content","$300–$600/mo"],["Website copy","$400–$900"],["Reel scripts","$200–$400"]].map(([item,price],i)=>(
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"8px 0", borderBottom: i < 3 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
+                <span style={{ color:"#666", fontSize:"12px" }}>{item}</span>
+                <span style={{ color:"#e05c5c", fontSize:"12px", fontWeight:"600" }}>{price}</span>
+              </div>
+            ))}
+            <div style={{ marginTop:"14px", paddingTop:"12px", borderTop:`1px solid rgba(255,255,255,.08)` }}>
+              <div style={{ display:"flex", justifyContent:"space-between" }}>
+                <span style={{ color:"#888", fontSize:"13px", fontWeight:"600" }}>Total</span>
+                <span style={{ color:"#e05c5c", fontSize:"16px", fontWeight:"700" }}>$1,700–$3,400+</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ textAlign:"center", padding:"0 8px" }}>
+            <div style={{ width:"40px", height:"40px", borderRadius:"50%", background:`${GOLD}18`, border:`1px solid ${GOLD}40`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto", color:GOLD, fontSize:"16px" }}>vs</div>
+          </div>
+          <div className="card-g" style={{ padding:"24px" }}>
+            <p style={{ color:GOLD, fontSize:"10px", letterSpacing:".15em", fontWeight:"700", marginBottom:"12px" }}>BRANDMIND PRO</p>
+            {[["Brand identity + logos","✓ Included"],["6 social media posts","✓ Included"],["Website copy","✓ Included"],["Reel scripts & bios","✓ Included"]].map(([item,price],i)=>(
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"8px 0", borderBottom: i < 3 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
+                <span style={{ color:"#888", fontSize:"12px" }}>{item}</span>
+                <span style={{ color:"#4CAF50", fontSize:"12px", fontWeight:"600" }}>{price}</span>
+              </div>
+            ))}
+            <div style={{ marginTop:"14px", paddingTop:"12px", borderTop:`1px solid ${GOLD}25` }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <span style={{ color:"#EDE5D4", fontSize:"13px", fontWeight:"600" }}>Total</span>
+                <span style={{ color:GOLD, fontSize:"22px", fontWeight:"900" }}>$49</span>
+              </div>
+              <p style={{ color:"#555", fontSize:"10px", marginTop:"4px", textAlign:"right" }}>One-time. No subscription.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{ padding: "0 20px 80px", maxWidth: "700px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>FAQ</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(24px,4vw,36px)", color: "#EDE5D4" }}>Common questions</h2>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {[
+            { q: "Is the $49 really a one-time payment?", a: "Yes. Pay once, use BrandMind forever. No monthly fees, no hidden costs." },
+            { q: "Can I generate more than one brand?", a: "Yes. With Pro you can generate and save up to 10 different brand kits. Perfect for agencies or multi-brand founders." },
+            { q: "What if I'm not happy with the result?", a: "Every section can be regenerated with one click. You can also edit all text directly. If you're still not satisfied, we offer refunds within 7 days." },
+            { q: "Do I need design skills?", a: "None. Answer 5 questions and the AI builds everything for you in under 2 minutes." },
+            { q: "Can I use the content commercially?", a: "Absolutely. Everything generated is yours to use for your business, clients, or any commercial project." },
+          ].map((item, i) => (
+            <FaqItem key={i} q={item.q} a={item.a} gold={GOLD} />
           ))}
         </div>
       </section>
@@ -819,6 +989,18 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
   const [regenLoading, setRegenLoading] = useState<any>({});
   const [editMode, setEditMode] = useState(false);
   const [showKitsPanel, setShowKitsPanel] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setPdfLoading(true);
+    try {
+      const { downloadBrandKitPDF } = await import("../lib/exportPdf");
+      await downloadBrandKitPDF(kitData, form, allContent);
+    } catch (e) {
+      console.warn("PDF export failed", e);
+    }
+    setPdfLoading(false);
+  };
 
   const updatePost = (i: number, field: string, v: string) =>
     setAllContent((p: any) => ({ ...p, posts: (p.posts || []).map((post: any, idx: number) => idx === i ? { ...post, [field]: v } : post) }));
@@ -917,6 +1099,14 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
               {editMode ? "✓ Done" : "✏ Edit"}
             </button>
           )}
+          <button
+            onClick={handleDownloadPDF}
+            disabled={pdfLoading}
+            className="o"
+            style={{ padding: "7px 12px", fontSize: "12px", opacity: pdfLoading ? 0.6 : 1 }}
+          >
+            {pdfLoading ? "…" : "↓ PDF"}
+          </button>
           <button onClick={isPremium ? onNewBrand : onRestart} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↺ New</button>
           <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
@@ -936,7 +1126,7 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
         {activeTab === "brand" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             <div className="card-g" style={{ padding: "28px", display: "flex", gap: "20px", alignItems: "flex-start", flexWrap: "wrap" }}>
-              <MiniLogo L={form.name[0].toUpperCase()} color={GOLD} style={form.style} size={90} />
+              <MiniLogo L={form.name[0].toUpperCase()} name={form.name} color={GOLD} style={form.style} size={90} />
               <div style={{ flex: 1, minWidth: "180px" }}>
                 <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "5px" }}>BRAND IDENTITY</p>
                 <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,5vw,44px)", color: "#EDE5D4", fontWeight: "900", marginBottom: "6px" }}>{form.name}</h1>
@@ -960,7 +1150,7 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                 {["modern", "classic", "luxury", "playful", "minimal"].map(s => (
                   <div key={s} style={{ background: "rgba(0,0,0,.3)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", flex: "1", minWidth: "70px" }}>
-                    <MiniLogo L={form.name[0].toUpperCase()} color={GOLD} style={s} size={52} />
+                    <MiniLogo L={form.name[0].toUpperCase()} name={form.name} color={GOLD} style={s} size={52} />
                     <span style={{ color: "#555", fontSize: "9px", letterSpacing: ".1em", textTransform: "uppercase" }}>{s}</span>
                   </div>
                 ))}
