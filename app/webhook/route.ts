@@ -3,6 +3,25 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+async function sendWelcomeEmail(email: string) {
+  if (!process.env.RESEND_API_KEY) return;
+  const { buildWelcomeEmail } = await import("../lib/welcomeEmail");
+  const { subject, html } = buildWelcomeEmail(email);
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: process.env.RESEND_FROM_EMAIL || "BrandMind <onboarding@resend.dev>",
+      to: [email],
+      subject,
+      html,
+    }),
+  });
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature")!;
@@ -19,8 +38,10 @@ export async function POST(req: NextRequest) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const email = session.customer_email || session.customer_details?.email;
-    console.log("✅ Payment completed:", email);
-    // Aquí guardaremos el email como Pro user
+    if (email) {
+      console.log("✅ Payment completed:", email);
+      await sendWelcomeEmail(email).catch(e => console.warn("Email failed:", e));
+    }
   }
 
   return NextResponse.json({ received: true });
