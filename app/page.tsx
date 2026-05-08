@@ -40,6 +40,7 @@ export default function Home() {
     const clean = email.toLowerCase().trim();
     setUserEmail(clean);
     localStorage.setItem("brandmind_email", clean);
+    let isPrem = false;
     try {
       const res = await fetch("/api/check-premium", {
         method: "POST",
@@ -50,11 +51,24 @@ export default function Home() {
       if (data.premium) {
         setIsPremium(true);
         localStorage.setItem("brandmind_premium_email", clean);
+        isPrem = true;
       }
-      return !!data.premium;
-    } catch {
-      return false;
-    }
+    } catch {}
+    // Load kits from server and merge with any local-only kits
+    fetch(`/api/kits?email=${encodeURIComponent(clean)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.kits?.length) return;
+        const localRaw = localStorage.getItem(`bm_kits_${clean}`);
+        const local: any[] = localRaw ? JSON.parse(localRaw) : [];
+        const serverIds = new Set(data.kits.map((k: any) => k.id));
+        const localOnly = local.filter((k: any) => !serverIds.has(k.id));
+        const merged = [...data.kits, ...localOnly].slice(0, 10);
+        setSavedKits(merged);
+        localStorage.setItem(`bm_kits_${clean}`, JSON.stringify(merged));
+      })
+      .catch(() => {});
+    return isPrem;
   }, []);
 
   const logout = useCallback(() => {
@@ -75,13 +89,27 @@ export default function Home() {
 
   const persistKits = useCallback((next: any[], email: string | null) => {
     setSavedKits(next);
-    if (email) localStorage.setItem(`bm_kits_${email}`, JSON.stringify(next));
+    if (email) {
+      localStorage.setItem(`bm_kits_${email}`, JSON.stringify(next));
+      fetch("/api/kits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, kits: next }),
+      }).catch(() => {});
+    }
   }, []);
 
   const updateKitContent = useCallback((kitId: string, content: any) => {
     setSavedKits(prev => {
       const next = prev.map((k: any) => k.id === kitId ? { ...k, allContent: content } : k);
-      if (userEmail) localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+      if (userEmail) {
+        localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+        fetch("/api/kits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userEmail, kits: next }),
+        }).catch(() => {});
+      }
       return next;
     });
   }, [userEmail]);
@@ -97,7 +125,14 @@ export default function Home() {
   const deleteKit = useCallback((kitId: string) => {
     setSavedKits(prev => {
       const next = prev.filter((k: any) => k.id !== kitId);
-      if (userEmail) localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+      if (userEmail) {
+        localStorage.setItem(`bm_kits_${userEmail}`, JSON.stringify(next));
+        fetch("/api/kits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userEmail, kits: next }),
+        }).catch(() => {});
+      }
       return next;
     });
   }, [userEmail]);
@@ -819,6 +854,18 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
   const [regenLoading, setRegenLoading] = useState<any>({});
   const [editMode, setEditMode] = useState(false);
   const [showKitsPanel, setShowKitsPanel] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setPdfLoading(true);
+    try {
+      const { downloadBrandKitPDF } = await import("../lib/exportPdf");
+      await downloadBrandKitPDF(kitData, form, allContent);
+    } catch (e) {
+      console.warn("PDF export failed", e);
+    }
+    setPdfLoading(false);
+  };
 
   const updatePost = (i: number, field: string, v: string) =>
     setAllContent((p: any) => ({ ...p, posts: (p.posts || []).map((post: any, idx: number) => idx === i ? { ...post, [field]: v } : post) }));
@@ -917,6 +964,14 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
               {editMode ? "✓ Done" : "✏ Edit"}
             </button>
           )}
+          <button
+            onClick={handleDownloadPDF}
+            disabled={pdfLoading}
+            className="o"
+            style={{ padding: "7px 12px", fontSize: "12px", opacity: pdfLoading ? 0.6 : 1 }}
+          >
+            {pdfLoading ? "…" : "↓ PDF"}
+          </button>
           <button onClick={isPremium ? onNewBrand : onRestart} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↺ New</button>
           <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
