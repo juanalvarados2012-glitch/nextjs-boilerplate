@@ -357,7 +357,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(44px,8vw,92px)", fontWeight: "900", color: GOLD, lineHeight: "1.04", marginBottom: "32px", fontStyle: "italic" }}>Your content. Automated.</h1>
           <p style={{ color: "#999", fontSize: "18px", maxWidth: "500px", margin: "0 auto 44px", lineHeight: "1.8" }}>Brand identity + 6 posts + website copy + Reel scripts. All in your voice. All in under 2 minutes.</p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
-            <button onClick={onStart} className="g" style={{ padding: "18px 48px", fontSize: "16px", borderRadius: "10px" }}>✦ Try Free — Generate My Brand</button>
+            <button onClick={onStart} className="g" style={{ padding: "18px 48px", fontSize: "16px", borderRadius: "10px" }}>✦ Create Your Brand</button>
             <button onClick={goBuy} className="o" style={{ padding: "18px 28px", fontSize: "15px" }}>Buy Now — $49</button>
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
@@ -365,6 +365,39 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
               <span key={i} style={{ color: "#555", fontSize: "12px" }}>{t}</span>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section style={{ padding: "0 20px 100px", maxWidth: "760px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>HOW IT WORKS</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4", marginBottom: "12px" }}>Your brand in 4 steps</h2>
+          <p style={{ color: "#666", fontSize: "14px" }}>Under 2 minutes. No designer. No agency.</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+          {[
+            { step: "01", icon: "✦", title: 'Click "Create Your Brand"', desc: 'Hit the gold button at the top of the page to get started. It\'s free — no credit card needed.' },
+            { step: "02", icon: "✎", title: "Answer 5 quick questions", desc: "Brand name, industry, values, audience, and visual style. Takes about 60 seconds." },
+            { step: "03", icon: "◈", title: "AI builds your full identity", desc: "Logo in 5 styles, color palette, typography, taglines, brand voice and story — all generated in your voice." },
+            { step: "04", icon: "↓", title: "Unlock all content with Pro", desc: "Get 6 social media posts, website copy, Reel scripts, and bios for every platform." },
+          ].map((s, i, arr) => (
+            <div key={i} style={{ display: "flex", gap: "0", position: "relative" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "24px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: `linear-gradient(135deg,${GOLD}22,${GOLD}08)`, border: `1px solid ${GOLD}40`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ color: GOLD, fontSize: "16px" }}>{s.icon}</span>
+                </div>
+                {i < arr.length - 1 && <div style={{ width: "1px", flex: 1, background: "rgba(196,151,90,.12)", minHeight: "40px", margin: "8px 0" }} />}
+              </div>
+              <div style={{ paddingBottom: i < arr.length - 1 ? "36px" : "0", paddingTop: "10px" }}>
+                <span style={{ color: GOLD, fontSize: "9px", letterSpacing: ".2em", fontWeight: "700" }}>PASO {s.step}</span>
+                <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "18px", color: "#EDE5D4", margin: "4px 0 8px" }}>{s.title}</h3>
+                <p style={{ color: "#666", fontSize: "13px", lineHeight: "1.7", maxWidth: "520px" }}>{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: "44px", textAlign: "center" }}>
+          <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "15px" }}>✦ Start here — It's free</button>
         </div>
       </section>
 
@@ -510,13 +543,74 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         </div>
       </section>
 
+      <section style={{ padding: "0 20px 80px", maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>PRICING</p>
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4", marginBottom: "10px" }}>Free vs Pro</h2>
+          <p style={{ color: "#666", fontSize: "14px" }}>See exactly what you get with each plan.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          {/* Free */}
+          <div className="card" style={{ padding: "28px 24px" }}>
+            <p style={{ color: "#888", fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "6px" }}>FREE</p>
+            <p style={{ fontFamily: "'Playfair Display',serif", fontSize: "28px", color: "#EDE5D4", fontWeight: "700", marginBottom: "4px" }}>$0</p>
+            <p style={{ color: "#444", fontSize: "12px", marginBottom: "24px" }}>Start for free, always</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[
+                { ok: true,  label: "Brand identity (logo, colors, typography)" },
+                { ok: true,  label: "Brand voice & story" },
+                { ok: true,  label: "3 tagline options" },
+                { ok: false, label: "12 social media posts" },
+                { ok: false, label: "Website copy" },
+                { ok: false, label: "Reel scripts" },
+                { ok: false, label: "Platform bios" },
+                { ok: false, label: "Save & manage brand kits" },
+                { ok: false, label: "Edit & export content" },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                  <span style={{ fontSize: "14px", marginTop: "1px", flexShrink: 0, color: item.ok ? "#4CAF50" : "#333" }}>{item.ok ? "✓" : "✕"}</span>
+                  <span style={{ color: item.ok ? "#bbb" : "#3a3a3a", fontSize: "13px", lineHeight: "1.4" }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={onStart} className="o" style={{ width: "100%", padding: "12px", fontSize: "13px", marginTop: "28px" }}>✦ Create Your Brand</button>
+          </div>
+          {/* Pro */}
+          <div className="card-g" style={{ padding: "28px 24px", position: "relative" }}>
+            <div style={{ position: "absolute", top: "-11px", left: "50%", transform: "translateX(-50%)", background: GOLD, color: "#0a0806", fontSize: "9px", fontWeight: "800", letterSpacing: ".15em", padding: "4px 12px", borderRadius: "100px" }}>MOST POPULAR</div>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "6px" }}>PRO</p>
+            <p style={{ fontFamily: "'Playfair Display',serif", fontSize: "28px", color: "#EDE5D4", fontWeight: "700", marginBottom: "4px" }}>$49</p>
+            <p style={{ color: "#666", fontSize: "12px", marginBottom: "24px" }}>One-time payment, forever</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[
+                "Brand identity (logo, colors, typography)",
+                "Brand voice & story",
+                "3 tagline options",
+                "12 social media posts",
+                "Website copy",
+                "Reel scripts",
+                "Platform bios",
+                "Save & manage brand kits",
+                "Edit & export content",
+              ].map((label, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                  <span style={{ fontSize: "14px", marginTop: "1px", flexShrink: 0, color: "#4CAF50" }}>✓</span>
+                  <span style={{ color: "#ccc", fontSize: "13px", lineHeight: "1.4" }}>{label}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={goBuy} className="g" style={{ width: "100%", padding: "12px", fontSize: "13px", marginTop: "28px" }}>Unlock Full Access — $49</button>
+          </div>
+        </div>
+      </section>
+
       <section style={{ padding: "0 20px 100px", maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div className="card-g" style={{ padding: "40px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>GET STARTED</p>
           <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,44px)", color: "#EDE5D4", marginBottom: "12px" }}>Ready to build your brand?</h2>
-          <p style={{ color: "#888", fontSize: "15px", marginBottom: "28px", lineHeight: "1.8" }}>$49 one-time payment. Full access, forever.</p>
+          <p style={{ color: "#888", fontSize: "15px", marginBottom: "28px", lineHeight: "1.8" }}>$49 one-time. Full access, forever.</p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "16px" }}>✦ Start Building</button>
+            <button onClick={onStart} className="g" style={{ padding: "16px 40px", fontSize: "16px" }}>✦ Create Your Brand</button>
             <button onClick={goBuy} className="o" style={{ padding: "16px 24px", fontSize: "15px" }}>Unlock Full Access — $49</button>
           </div>
           <p style={{ color: "#444", fontSize: "12px", marginTop: "16px" }}>🔒 Secure payment via Stripe</p>
@@ -770,7 +864,7 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
     const ctx = `Brand: ${form.name} | Industry: ${form.industry} | Values: ${form.values.join(", ")} | Audience: ${form.audience} | Style: ${form.style}`;
     try {
       const [p, c, r, b] = await Promise.all([
-        callAI(`Social media expert. 6 Instagram posts for this brand. ${ctx}\nReturn ONLY raw JSON: {"posts":[{"hook":"","caption":"","hashtags":""}]}`),
+        callAI(`Social media expert. 12 Instagram posts for this brand. Make each post unique: mix educational, inspirational, behind-the-scenes, promotional, story-based, and engagement posts. ${ctx}\nReturn ONLY raw JSON: {"posts":[{"hook":"","caption":"","hashtags":""}]}`, 2000),
         callAI(`Conversion copywriter. Website copy. ${ctx}\nReturn ONLY raw JSON: {"hero":{"headline":"","subheadline":"","cta":""},"about":{"headline":"","body":""},"services":{"headline":"","items":[{"name":"","desc":""}]},"social_proof":""}`),
         callAI(`Video scriptwriter. 3 Reel scripts. ${ctx}\nReturn ONLY raw JSON: {"reels":[{"title":"","hook":"","body":"","cta":"","duration":""}]}`),
         callAI(`Social media bios. ${ctx}\nReturn ONLY raw JSON: {"instagram":{"bio":"","link_cta":""},"tiktok":{"bio":""},"linkedin":{"headline":"","summary":""},"twitter":{"bio":""}}`),
@@ -790,11 +884,25 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
 
   const ALL_TABS = [
     { id: "brand", icon: "🎨", label: "Brand" },
+    { id: "preview", icon: "◈", label: "Preview" },
     { id: "posts", icon: "📱", label: "Posts" },
     { id: "copy", icon: "🌐", label: "Copy" },
     { id: "reels", icon: "🎬", label: "Reels" },
     { id: "bio", icon: "✏️", label: "Bio" },
   ];
+
+  const exportPDF = () => {
+    const c = kitData.colors || [];
+    const primary = c[0]?.hex || "#0a0806";
+    const accent = c[1]?.hex || "#C4975A";
+    const light = c[3]?.hex || "#EDE5D4";
+    const tagline = kitData.taglines?.[0] || "";
+    const swatches = c.map((col: any) => `<div style="display:inline-block;margin-right:12px;text-align:center;"><div style="width:56px;height:56px;border-radius:10px;background:${col.hex};margin-bottom:6px;border:1px solid rgba(0,0,0,.1)"></div><div style="font-size:10px;font-weight:600;color:#111">${col.name}</div><div style="font-size:9px;color:#888">${col.hex}</div></div>`).join("");
+    const posts = allContent.posts ? allContent.posts.map((p: any, i: number) => `<div style="page-break-inside:avoid;margin-bottom:16px;padding:16px;border:1px solid #eee;border-radius:8px;"><div style="font-size:10px;color:#888;font-weight:700;margin-bottom:6px">POST ${i+1}</div><p style="font-size:13px;font-weight:700;margin-bottom:6px;color:#111">${p.hook}</p><p style="font-size:12px;color:#333;margin-bottom:6px;line-height:1.6">${p.caption}</p><p style="font-size:10px;color:#888">${p.hashtags}</p></div>`).join("") : "<p style='color:#999;font-size:12px'>Content not generated yet.</p>";
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${form.name} — Brand Kit</title><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#fff;color:#111;padding:40px;max-width:800px;margin:0 auto}h1,h2,h3{font-family:'Playfair Display',serif}h2{font-size:13px;letter-spacing:.2em;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:8px}h3{font-size:22px;color:#111;margin-bottom:4px}.section{margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid #f0f0f0}.cover{background:${primary};padding:40px;border-radius:16px;display:flex;align-items:center;gap:24px;margin-bottom:48px}.logo-box{width:72px;height:72px;border-radius:12px;background:${accent};display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:${primary}}.cover-text h1{color:${light};font-size:32px;margin-bottom:6px}.cover-text p{color:${accent};font-style:italic;font-size:14px}@media print{body{padding:20px}}</style></head><body><div class="cover"><div class="logo-box">${form.name[0].toUpperCase()}</div><div class="cover-text"><h1>${form.name}</h1><p>${tagline}</p><p style="color:${light};opacity:.6;font-size:11px;margin-top:4px">${form.industry}</p></div></div><div class="section"><h2>Color Palette</h2><div style="margin-top:16px">${swatches}</div></div><div class="section"><h2>Typography</h2><div style="display:flex;gap:32px;margin-top:12px"><div><div style="font-size:10px;color:#888;margin-bottom:4px">DISPLAY</div><div style="font-size:20px;font-family:'Playfair Display',serif;color:#111">${kitData.typography?.display?.name || "Playfair Display"}</div><div style="font-size:11px;color:#999">${kitData.typography?.display?.description || ""}</div></div><div><div style="font-size:10px;color:#888;margin-bottom:4px">BODY</div><div style="font-size:16px;color:#111">${kitData.typography?.body?.name || "DM Sans"}</div><div style="font-size:11px;color:#999">${kitData.typography?.body?.description || ""}</div></div></div></div><div class="section"><h2>Taglines</h2>${(kitData.taglines || []).map((t: string, i: number) => `<p style="font-family:'Playfair Display',serif;font-size:16px;color:${i===0?"#111":"#999"};margin-top:10px;font-style:italic">${i===0?"★ ":""}${t}</p>`).join("")}</div><div class="section"><h2>Brand Voice</h2><p style="font-size:13px;line-height:1.8;color:#333;margin-top:10px;font-style:italic">"${kitData.brandVoice || ""}"</p></div><div class="section"><h2>Brand Story</h2><p style="font-size:13px;line-height:1.8;color:#333;margin-top:10px">${kitData.brandStory || ""}</p></div><div class="section"><h2>Social Media Posts</h2><div style="margin-top:16px;columns:2;column-gap:16px">${posts}</div></div><div style="margin-top:40px;text-align:center;color:#ccc;font-size:10px">Generated by BrandMind · brandmind.ai</div><script>window.onload=()=>{window.print()}</script></body></html>`;
+    const w = window.open("", "_blank");
+    if (w) { w.document.write(html); w.document.close(); }
+  };
 
   const RegenBtn = ({ section, label }: any) => (
     <button onClick={() => regenSection(section)} style={{ padding: "4px 10px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "6px", color: "#777", fontSize: "10px", cursor: "pointer" }}>
@@ -823,6 +931,7 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
               {editMode ? "✓ Done" : "✏ Edit"}
             </button>
           )}
+          {isPremium && <button onClick={exportPDF} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↓ Export PDF</button>}
           <button onClick={isPremium ? onNewBrand : onRestart} className="o" style={{ padding: "7px 12px", fontSize: "12px" }}>↺ New</button>
           <UserMenu userEmail={userEmail} isPremium={isPremium} onOpenLogin={onOpenLogin} onLogout={onLogout} />
         </div>
@@ -929,7 +1038,7 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
               {genStatus === "idle" && isPremium && <>
                 <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "8px" }}>CONTENT ENGINE</p>
                 <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px", color: "#EDE5D4", marginBottom: "7px" }}>Generate all your content</h3>
-                <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px" }}>6 posts, website copy, Reel scripts, and bios — in your brand voice.</p>
+                <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px" }}>12 posts, website copy, Reel scripts, and bios — in your brand voice.</p>
                 <button onClick={generateAll} className="g" style={{ padding: "14px 36px", fontSize: "15px" }}>✦ Generate All Content</button>
               </>}
               {genStatus === "running" && (
@@ -954,7 +1063,9 @@ function Results({ kit, form, onRestart, onNewBrand, callAI, isPremium, onLogin,
           </div>
         )}
 
-        {activeTab !== "brand" && (
+        {activeTab === "preview" && <PreviewView kit={kitData} form={form} />}
+
+        {activeTab !== "brand" && activeTab !== "preview" && (
           <div>
             {!allContent.posts ? (
               <div className="card" style={{ padding: "40px", textAlign: "center" }}>
@@ -1198,6 +1309,104 @@ function BioView({ content, copy, copied, editMode, onUpdateBio }: any) {
   );
 }
 
+function PreviewView({ kit, form }: any) {
+  const c = kit.colors || [];
+  const primary = c[0]?.hex || "#0a0806";
+  const accent = c[1]?.hex || GOLD;
+  const light = c[3]?.hex || "#EDE5D4";
+  const tagline = kit.taglines?.[0] || form.name;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {/* Business Card */}
+      <div className="card" style={{ padding: "20px" }}>
+        <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "18px" }}>BUSINESS CARD</p>
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}>
+          {/* Front */}
+          <div style={{ width: "300px", height: "170px", background: primary, borderRadius: "14px", padding: "22px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "0 24px 64px rgba(0,0,0,.6)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <MiniLogo L={form.name[0].toUpperCase()} color={accent} style={form.style} size={38} />
+              <div>
+                <div style={{ fontFamily: "'Playfair Display',serif", color: light, fontSize: "17px", fontWeight: "700" }}>{form.name}</div>
+                <div style={{ color: accent, fontSize: "9px", letterSpacing: ".12em", opacity: 0.8, marginTop: "2px" }}>{form.industry.toUpperCase()}</div>
+              </div>
+            </div>
+            <p style={{ color: accent, fontSize: "11px", fontStyle: "italic", fontFamily: "'Playfair Display',serif", lineHeight: "1.4" }}>{tagline}</p>
+          </div>
+          {/* Back */}
+          <div style={{ width: "300px", height: "170px", background: `linear-gradient(135deg,${accent},${c[2]?.hex || accent}88)`, borderRadius: "14px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: "0 24px 64px rgba(0,0,0,.6)" }}>
+            <MiniLogo L={form.name[0].toUpperCase()} color={primary} style={form.style} size={56} />
+            <div style={{ color: primary, fontSize: "13px", fontFamily: "'Playfair Display',serif", fontWeight: "700", opacity: 0.8 }}>{form.name}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Instagram Post */}
+      <div className="card" style={{ padding: "20px" }}>
+        <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "18px" }}>INSTAGRAM POST</p>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ width: "220px", background: "#111", borderRadius: "28px", padding: "12px 10px", boxShadow: "0 28px 72px rgba(0,0,0,.7)", border: "2px solid rgba(255,255,255,.07)" }}>
+            <div style={{ height: "18px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", padding: "0 4px" }}>
+              <span style={{ color: "#fff", fontSize: "8px", fontWeight: "700" }}>9:41</span>
+              <div style={{ display: "flex", gap: "3px", alignItems: "center" }}>
+                {[4,3,2].map(i => <div key={i} style={{ width: "2px", height: `${i*2+2}px`, background: "#fff", borderRadius: "1px", opacity: 0.8 }} />)}
+                <div style={{ width: "10px", height: "5px", border: "1px solid rgba(255,255,255,.5)", borderRadius: "1px", marginLeft: "2px" }}><div style={{ width: "60%", height: "100%", background: "#fff", borderRadius: "1px" }} /></div>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "6px", padding: "0 2px" }}>
+              <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: `linear-gradient(135deg,${accent},${primary})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ color: light, fontSize: "8px", fontWeight: "700" }}>{form.name[0]}</span>
+              </div>
+              <span style={{ color: "#fff", fontSize: "8px", fontWeight: "600" }}>{form.name.toLowerCase().replace(/ /g, "_")}</span>
+              <span style={{ color: "#555", fontSize: "10px", marginLeft: "auto" }}>•••</span>
+            </div>
+            <div style={{ width: "100%", aspectRatio: "1", background: `linear-gradient(150deg,${primary} 0%,${c[2]?.hex || accent}44 100%)`, borderRadius: "6px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "14px", marginBottom: "7px" }}>
+              <MiniLogo L={form.name[0].toUpperCase()} color={accent} style={form.style} size={52} />
+              <p style={{ color: light, fontSize: "8px", fontStyle: "italic", fontFamily: "'Playfair Display',serif", textAlign: "center", marginTop: "10px", lineHeight: "1.5" }}>{tagline}</p>
+            </div>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "5px", padding: "0 2px" }}>
+              {["♡", "💬", "↗", "✈"].map((icon, i) => <span key={i} style={{ color: i === 3 ? "transparent" : "#fff", fontSize: "12px", marginLeft: i === 3 ? "auto" : 0 }}>{icon}</span>)}
+            </div>
+            <p style={{ color: "#aaa", fontSize: "7px", padding: "0 2px", lineHeight: "1.5" }}><strong style={{ color: "#fff" }}>{form.name.toLowerCase().replace(/ /g, "_")}</strong> {tagline}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Website Hero */}
+      <div className="card" style={{ padding: "20px" }}>
+        <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "18px" }}>WEBSITE HERO</p>
+        <div style={{ borderRadius: "10px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,.6)", border: "1px solid rgba(255,255,255,.07)" }}>
+          <div style={{ background: "#1c1c1c", padding: "8px 12px", display: "flex", alignItems: "center", gap: "6px" }}>
+            {["#ff5f56","#ffbd2e","#27c93f"].map((col, i) => <div key={i} style={{ width: "9px", height: "9px", borderRadius: "50%", background: col }} />)}
+            <div style={{ flex: 1, background: "rgba(255,255,255,.05)", borderRadius: "4px", padding: "3px 10px", marginLeft: "6px" }}>
+              <span style={{ color: "#555", fontSize: "8px" }}>www.{form.name.toLowerCase().replace(/ /g, "")}.com</span>
+            </div>
+          </div>
+          <div style={{ background: primary, padding: "28px 24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "36px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+                <MiniLogo L={form.name[0].toUpperCase()} color={accent} style={form.style} size={20} />
+                <span style={{ color: light, fontSize: "11px", fontFamily: "'Playfair Display',serif", fontWeight: "700" }}>{form.name}</span>
+              </div>
+              <div style={{ display: "flex", gap: "14px" }}>
+                {["About","Work","Contact"].map(l => <span key={l} style={{ color: light, fontSize: "8px", opacity: 0.5 }}>{l}</span>)}
+              </div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ display: "inline-block", background: `${accent}18`, border: `1px solid ${accent}30`, borderRadius: "100px", padding: "4px 12px", marginBottom: "16px" }}>
+                <span style={{ color: accent, fontSize: "8px", fontWeight: "700", letterSpacing: ".12em" }}>{form.industry.toUpperCase()}</span>
+              </div>
+              <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "22px", color: light, fontWeight: "900", marginBottom: "10px", lineHeight: "1.2" }}>{tagline}</h2>
+              <p style={{ color: light, fontSize: "9px", opacity: 0.5, marginBottom: "18px" }}>Built on {(form.values || []).join(" · ")}</p>
+              <div style={{ display: "inline-block", background: accent, color: primary, padding: "9px 20px", borderRadius: "7px", fontSize: "9px", fontWeight: "700" }}>Get Started →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean> }) {
   const [email, setEmail] = useState("");
   const [buying, setBuying] = useState(false);
@@ -1238,7 +1447,7 @@ function PaywallCard({ onLogin }: { onLogin: (email: string) => Promise<boolean>
     <>
       <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".2em", fontWeight: "700", marginBottom: "8px" }}>PRO FEATURE</p>
       <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px", color: "#EDE5D4", marginBottom: "7px" }}>Unlock your full content kit</h3>
-      <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px", lineHeight: "1.7" }}>6 posts, website copy, Reel scripts & bios — generated in your brand voice.</p>
+      <p style={{ color: "#777", fontSize: "13px", marginBottom: "18px", lineHeight: "1.7" }}>12 posts, website copy, Reel scripts & bios — generated in your brand voice.</p>
       <input
         type="email"
         value={email}
