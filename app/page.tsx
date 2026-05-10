@@ -416,7 +416,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
             { step: "01", icon: "✦", title: 'Click "Create Your Brand"', desc: 'Hit the gold button at the top of the page to get started. It\'s free — no credit card needed.' },
             { step: "02", icon: "✎", title: "Answer 5 quick questions", desc: "Brand name, industry, values, audience, and visual style. Takes about 60 seconds." },
             { step: "03", icon: "◈", title: "AI builds your full identity", desc: "Logo in 5 styles, color palette, typography, taglines, brand voice and story — all generated in your voice." },
-            { step: "04", icon: "↓", title: "Unlock all content with Pro", desc: "Get 6 social media posts, website copy, Reel scripts, and bios for every platform." },
+            { step: "04", icon: "↓", title: "Unlock all content with Pro", desc: "Get 12 social media posts, website copy, Reel scripts, and bios for every platform." },
           ].map((s, i, arr) => (
             <div key={i} style={{ display: "flex", gap: "0", position: "relative" }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "24px" }}>
