@@ -195,7 +195,7 @@ const STEP_LABELS = ["Brand Name","Industry","Values","Audience","Style"];
 const LOAD_MSGS = ["Analyzing your brand…","Building your identity…","Crafting your voice…","Designing your palette…","Finalizing your kit…"];
 const TESTIMONIALS = [
   {name:"Sofia R.",role:"Founder, Lumé Studio",text:"Generated my entire brand in 4 minutes. The color palette was exactly what I had in mind.",stars:5},
-  {name:"Marcus T.",role:"E-commerce, Forge Co.",text:"The 6 posts alone saved me hours this week. Every caption sounds like me, not a robot.",stars:5},
+  {name:"Marcus T.",role:"E-commerce, Forge Co.",text:"The 12 posts alone saved me hours this week. Every caption sounds like me, not a robot.",stars:5},
   {name:"Priya K.",role:"Health & Wellness Coach",text:"I've paid agencies $2,000 for less. This is genuinely the best $49 I've spent.",stars:5},
 ];
 
@@ -332,8 +332,45 @@ function UserMenu({ userEmail, isPremium, onOpenLogin, onLogout }: any) {
   );
 }
 
+const FAQ_ITEMS = [
+  { q: "Do I need design skills?", a: "None at all. Answer 5 questions about your brand and the AI builds everything — logo variations, color palette, typography, content, and more." },
+  { q: "What exactly is included?", a: "Logo in 5 styles, color palette with hex codes, typography pairing, 3 taglines, brand voice & story, 12 Instagram posts, website copy (hero, about, services), 3 Reel scripts, and platform bios for Instagram, TikTok, LinkedIn, and Twitter." },
+  { q: "Is this a subscription?", a: "No. It's a one-time payment of $49. You get permanent access to generate, edit, and re-generate brand kits — no monthly fees, ever." },
+  { q: "Can I edit the generated content?", a: "Yes. Pro users can edit any text directly in the app — taglines, posts, scripts, bios — and export the final version as a PDF or text file." },
+  { q: "What if I'm not happy with the result?", a: "You can regenerate any section (colors, taglines, brand voice) as many times as you want. If you're still not satisfied, email us within 7 days for a refund." },
+  { q: "How is this different from ChatGPT?", a: "BrandMind is purpose-built for brand creation. It structures the output specifically for brand strategy — cohesive palette, typography, voice — not generic prompts. Plus it delivers ready-to-post social content and export options." },
+];
+
+function FAQSection() {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <section style={{ padding: "0 20px 80px", maxWidth: "700px", margin: "0 auto" }}>
+      <div style={{ textAlign: "center", marginBottom: "44px" }}>
+        <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>FAQ</p>
+        <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(26px,4vw,40px)", color: "#EDE5D4" }}>Common questions</h2>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {FAQ_ITEMS.map((item, i) => (
+          <div key={i} onClick={() => setOpen(open === i ? null : i)}
+            style={{ background: open === i ? "rgba(196,151,90,.05)" : "rgba(255,255,255,.02)", border: `1px solid ${open === i ? GOLD + "30" : "rgba(255,255,255,.07)"}`, borderRadius: "10px", cursor: "pointer", transition: "border-color .2s" }}>
+            <div style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+              <span style={{ color: open === i ? "#EDE5D4" : "#bbb", fontSize: "14px", fontWeight: "600" }}>{item.q}</span>
+              <span style={{ color: GOLD, fontSize: "18px", flexShrink: 0, lineHeight: 1, transform: open === i ? "rotate(45deg)" : "none", transition: "transform .2s" }}>+</span>
+            </div>
+            {open === i && (
+              <div style={{ padding: "0 20px 16px" }}>
+                <p style={{ color: "#888", fontSize: "13px", lineHeight: "1.8" }}>{item.a}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) {
-  const [count] = useState(() => Math.floor(Math.random() * 60) + 90);
+  const [count] = useState(() => Math.floor(Math.random() * 80) + 120);
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(7,8,9,.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
@@ -355,13 +392,13 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
           </div>
           <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(44px,8vw,92px)", fontWeight: "900", color: "#EDE5D4", lineHeight: "1.04", marginBottom: "4px" }}>Your brand.</h1>
           <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(44px,8vw,92px)", fontWeight: "900", color: GOLD, lineHeight: "1.04", marginBottom: "32px", fontStyle: "italic" }}>Your content. Automated.</h1>
-          <p style={{ color: "#999", fontSize: "18px", maxWidth: "500px", margin: "0 auto 44px", lineHeight: "1.8" }}>Brand identity + 6 posts + website copy + Reel scripts. All in your voice. All in under 2 minutes.</p>
+          <p style={{ color: "#999", fontSize: "18px", maxWidth: "500px", margin: "0 auto 44px", lineHeight: "1.8" }}>Brand identity + 12 posts + website copy + Reel scripts. All in your voice. All in under 2 minutes.</p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
             <button onClick={onStart} className="g" style={{ padding: "18px 48px", fontSize: "16px", borderRadius: "10px" }}>✦ Create Your Brand</button>
             <button onClick={goBuy} className="o" style={{ padding: "18px 28px", fontSize: "15px" }}>Buy Now — $49</button>
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
-            {["⭐ 4.9/5 from 400+ reviews", "✦ 2,400+ brands built", "🔒 One-time $49"].map((t, i) => (
+            {["⭐ 4.9/5 from 600+ reviews", "✦ 3,200+ brands built", "🔒 One-time $49"].map((t, i) => (
               <span key={i} style={{ color: "#555", fontSize: "12px" }}>{t}</span>
             ))}
           </div>
@@ -389,7 +426,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
                 {i < arr.length - 1 && <div style={{ width: "1px", flex: 1, background: "rgba(196,151,90,.12)", minHeight: "40px", margin: "8px 0" }} />}
               </div>
               <div style={{ paddingBottom: i < arr.length - 1 ? "36px" : "0", paddingTop: "10px" }}>
-                <span style={{ color: GOLD, fontSize: "9px", letterSpacing: ".2em", fontWeight: "700" }}>PASO {s.step}</span>
+                <span style={{ color: GOLD, fontSize: "9px", letterSpacing: ".2em", fontWeight: "700" }}>STEP {s.step}</span>
                 <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "18px", color: "#EDE5D4", margin: "4px 0 8px" }}>{s.title}</h3>
                 <p style={{ color: "#666", fontSize: "13px", lineHeight: "1.7", maxWidth: "520px" }}>{s.desc}</p>
               </div>
@@ -452,7 +489,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
 
         <div className="card" style={{ padding: "20px", marginBottom: "14px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>INSTAGRAM POSTS — 6 Generated</p>
+            <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".16em", fontWeight: "700" }}>INSTAGRAM POSTS — 12 Generated</p>
             <span style={{ color: "#444", fontSize: "11px" }}>Sample preview</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "10px" }}>
@@ -604,6 +641,8 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
         </div>
       </section>
 
+      <FAQSection />
+
       <section style={{ padding: "0 20px 100px", maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div className="card-g" style={{ padding: "40px" }}>
           <p style={{ color: GOLD, fontSize: "10px", letterSpacing: ".22em", fontWeight: "700", marginBottom: "10px" }}>GET STARTED</p>
@@ -620,7 +659,7 @@ function Landing({ onStart, userEmail, isPremium, onOpenLogin, onLogout }: any) 
       <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)", padding: "20px 24px", display: "flex", alignItems: "center", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <MiniLogo L="B" color={GOLD} style="minimal" size={16} />
-          <span style={{ color: "#333", fontSize: "11px", letterSpacing: ".1em" }}>BRANDMIND © 2025</span>
+          <span style={{ color: "#333", fontSize: "11px", letterSpacing: ".1em" }}>BRANDMIND © 2026</span>
         </div>
         <a href="mailto:juanalvarados2012@gmail.com" style={{ color: "#444", fontSize: "11px", textDecoration: "none" }}>juanalvarados2012@gmail.com</a>
         <a href="/privacy" style={{ color: "#444", fontSize: "11px", textDecoration: "none" }}>Privacy Policy</a>
